@@ -1,0 +1,26 @@
+{% extends "tracker_app/base.html" %}
+{% block title %}Login{% endblock %}
+{% block body %}
+    <div class="header">
+        <span class="heading">Login</span><br/>
+    </div>
+    <div class="spacer-tiny"></div>
+    <div class="data-input">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="{{ message.tags }}">
+                <span> {{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+        <form action="{% url 'login_view' %}" method="POST">
+            {% csrf_token %}
+            <input class="input-login" type="text" name="username" placeholder="Username"><br/>
+            <input class="input-login" type="password" name="password" placeholder="Password"><br/>
+            <button id="btn-login">Login</button>
+        </form>
+        <div class="spacer-tiny"></div>
+        <span>No Account?<span></span>
+        <a class="link-register" href="{% url 'register' %}">Register Here</a>
+    </div>
+{% endblock %}

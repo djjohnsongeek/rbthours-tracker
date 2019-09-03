@@ -1,0 +1,56 @@
+{% extends "tracker_app/base.html" %}
+{% block title %}View Hours{% endblock %}
+{% block body %}
+<div class="header">
+    <span class="heading">Your RBT</span><br/>
+    <span class="subheading">Supervision Hours</span>
+    <div class="spacer-small"></div>
+    <div>
+        <select id="select-viewhours">
+                <option value="" disabled selected>Pick Time Frame</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+        </select>
+    </div>
+</div>
+{% if messages %}
+    {% for message in messages %}
+        <div class="{{ message.tags }}">
+            <span> {{ message }}</span>
+        </div>
+    {% endfor %}
+{% endif %}
+{% if hours %}
+    <div class="table-container">
+    <table class="hours-table">
+        <caption id="table-caption">{{ table_type.capitalize }}</caption>
+        <thead>
+            <tr>
+                {% for heading in headings %}
+                <th>{{ heading }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in hours %}
+            <tr>
+                {% for data in row %}
+                <td>{{ data }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% endif %}
+<script type="text/javascript">
+    document.getElementById("select-viewhours").addEventListener("change", () => {
+        const tableType = document.getElementById("select-viewhours").value;
+        // no table is rendered if there is no data
+        if (tableType !== document.getElementById("table-caption").innerHTML.toLowerCase()){
+            window.location = `http://127.0.0.1:8000/view-hours?table_type=${tableType}`;
+        }
+    })
+</script>
+{% endblock %}

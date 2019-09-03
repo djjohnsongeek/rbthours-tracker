@@ -1,0 +1,28 @@
+{% extends "tracker_app/base.html" %}
+{% block title %} Register {% endblock %}
+{% block body %}
+    <div class="header">
+        <span class="heading">Register</span><br/>
+    </div>
+    <div class="spacer-tiny"></div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="{{ message.tags }}">
+                <span> {{ message }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="data-input">
+        <form action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
+            <input class="input-login" type="text" name="username" placeholder="Username"><br/>
+            <input class="input-login" type="email" name="email" placeholder="Email"><br/>
+            <input class="input-login" type="password" name="password" placeholder="Password"><br/>
+            <input class="input-login" type="password" name="confirm_pw" placeholder="Confirm Password"><br/>
+            <button id="btn-login">Register</button>
+        </form>
+        <div class="spacer-tiny"></div>
+        <span>Already Registered?<span></span>
+        <a class="link-register" href="{% url 'login_view' %}">Login Here</a>
+    </div>
+{% endblock %}

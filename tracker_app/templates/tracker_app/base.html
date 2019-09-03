@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            {% block title %} {% endblock %}
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto&display=swap" rel="stylesheet">
+        {% load static %}
+        <link href="{% static 'tracker_app/styles.css' %}" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        {% if user.is_authenticated %}
+        <nav>
+            <div id="flex-container">
+                    <a href="{% url 'index' %}">Log Hours</a>
+                    <span class="nav-devider">|</span>
+                    <a href="{% url 'view_hours' %}?table_type=daily">View Hours</a>
+                    <span class="nav-devider">|</span>
+                <a href="{% url 'logout_view' %}">Logout</a>
+            </div>
+            <hr/>
+        </nav>
+        {% endif %}
+        <div class="spacer-small"></div>
+        {% block body %} {% endblock %}
+    </body>
+</html>

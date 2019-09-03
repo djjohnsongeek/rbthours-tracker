@@ -1,0 +1,7 @@
+{% extends "tracker_app/base.html" %}
+{% block title %} Log Hours {% endblock %}
+{% block body %}
+    <div class="data-input" id="app"><!--REACT APP HERE--></div>
+    {% load static %}
+    <script src="{% static 'tracker_app/react.jsx' %}" type="text/jsx"></script>
+{% endblock %}
