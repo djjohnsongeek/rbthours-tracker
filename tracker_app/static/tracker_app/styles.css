@@ -169,6 +169,15 @@ caption{
     color: white;
     font-size: 2rem;
     padding: 5px;
+    border: 1px solid white;
+    border-bottom: hidden;
+}
+.th-empty-table{
+    background-color: red;
+    color: white;
+}
+.tr-empty-table{
+    border: 1px solid white;
 }
 /* SERVER MESSAGES */
 .error{
@@ -226,7 +235,7 @@ caption{
 }
 @media screen and (max-width: 580px){
     .table-container{
-        width: 95%;
+        width: 100%;
     }
     .hours-table{
         width: 100%;

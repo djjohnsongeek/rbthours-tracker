@@ -6,6 +6,6 @@ urlpatterns = [
     path("login", views.login_view, name="login_view"),
     path("logout", views.logout_view, name="logout_view"),
     path("register", views.register, name="register"),
-    path("view-hours", views.view_hours, name="view_hours"),
-    path("log-data", views.log_data, name="log_data"),
+    path("view-hours/<str:table_type>", views.view_hours, name="view_hours"),
+    path("log-data/<str:log_type>", views.log_data, name="log_data"),
 ]

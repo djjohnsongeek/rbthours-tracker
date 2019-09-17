@@ -14,42 +14,43 @@
         </select>
     </div>
 </div>
-{% if messages %}
-    {% for message in messages %}
-        <div class="{{ message.tags }}">
-            <span> {{ message }}</span>
-        </div>
-    {% endfor %}
-{% endif %}
-{% if hours %}
-    <div class="table-container">
+<div class="table-container">
     <table class="hours-table">
         <caption id="table-caption">{{ table_type.capitalize }}</caption>
-        <thead>
-            <tr>
-                {% for heading in headings %}
-                <th>{{ heading }}</th>
+        {% if data %}
+            <thead>
+                <tr>
+                    {% for heading in headings %}
+                    <th>{{ heading }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for fields, value in row.fields.items %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
+            </tbody>
+        {% elif not hours %}
+        <thead class="tr-empty-table">
+            <tr>
+                <th class="th-empty-table">{{ message }}</th>
             </tr>
         </thead>
-        <tbody>
-            {% for row in hours %}
-            <tr>
-                {% for data in row %}
-                <td>{{ data }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
+        {% endif %}
     </table>
     </div>
-{% endif %}
+
 <script type="text/javascript">
     document.getElementById("select-viewhours").addEventListener("change", () => {
         const tableType = document.getElementById("select-viewhours").value;
+
         // no table is rendered if there is no data
         if (tableType !== document.getElementById("table-caption").innerHTML.toLowerCase()){
-            window.location = `http://127.0.0.1:8000/view-hours?table_type=${tableType}`;
+            window.location = `http://127.0.0.1:8000/view-hours/${tableType}`;
         }
     })
 </script>

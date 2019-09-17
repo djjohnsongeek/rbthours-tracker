@@ -1,0 +1,5 @@
+# ignore the following files
+rbthours/__pycache__/
+tracker_app/__pycache__/
+tracker_app/migrations/
+tracker_app/commit-notes.txt

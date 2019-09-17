@@ -103,10 +103,9 @@ class App extends React.Component {
         }
 
         // setup url and data for the POST request
-        const url = "http://127.0.0.1:8000/log-data";
-        
+        const url = `http://127.0.0.1:8000/log-data/${logType}`;
+        console.log(logType);
         const data = {
-            "form_type": logType,
             "date": date,
             "hours": hours,
             "obs_time": obsTime,

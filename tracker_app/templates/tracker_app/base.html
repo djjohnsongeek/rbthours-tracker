@@ -19,7 +19,7 @@
             <div id="flex-container">
                     <a href="{% url 'index' %}">Log Hours</a>
                     <span class="nav-devider">|</span>
-                    <a href="{% url 'view_hours' %}?table_type=daily">View Hours</a>
+                    <a href="{% url 'view_hours' 'daily' %}">View Hours</a>
                     <span class="nav-devider">|</span>
                 <a href="{% url 'logout_view' %}">Logout</a>
             </div>
