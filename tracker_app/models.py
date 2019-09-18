@@ -16,20 +16,6 @@ class Daily_log(models.Model):
                 fields=["user_id", "date"], name="unique_daily_logs"
             )
         ]
-        
-
-class Weekly_log(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField()
-    session_hours = models.DecimalField(max_digits=5, decimal_places=2)
-    observed_hours = models.DecimalField(max_digits=5, decimal_places=2)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user_id", "date"], name="unique_weekly_logs"
-            )
-        ]
 
 class Monthly_log(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -42,6 +28,7 @@ class Monthly_log(models.Model):
     month = models.CharField(max_length=9)
     session_hours = models.DecimalField(max_digits=5, decimal_places=2)
     observed_hours = models.DecimalField(max_digits=5, decimal_places=2)
+    mutable = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
