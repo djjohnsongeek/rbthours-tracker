@@ -1,5 +1,8 @@
-# ignore the following files
+# ignore the following files and folders
+__pycache__/
+cal.py
 rbthours/__pycache__/
 tracker_app/__pycache__/
 tracker_app/migrations/
 tracker_app/commit-notes.txt
+TODO.txt
