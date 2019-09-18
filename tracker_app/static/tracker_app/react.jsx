@@ -14,7 +14,6 @@ class SelectTitle extends React.Component {
             <div className="header">
                 <select onChange={this.props.handleChange} id="slct-logdata">
                     <option id="op-daily" value="day">Daily Hours</option>
-                    <option id="op-weekly" value="week">Weekly Hours</option>
                     <option id="op-monthly" value="month">Monthly Hours</option>
                 </select>
             </div>
@@ -44,18 +43,6 @@ class DayForm extends React.Component {
     }
 }
 
-class WeekForm extends React.Component {
-    render() {
-        return(
-            <form className="form-logdata" data-formtype="week" id="weekly">
-                <DefaultFields />
-                <input placeholder="Hours Observed" type="text" name="obs_time"/><br/>
-                <button onClick={this.props.postData} className="btn-submit-data">Submit</button>
-            </form>
-        )
-    }
-}
-
 class MonthForm extends React.Component {
     render() {
         return (
@@ -76,7 +63,6 @@ class App extends React.Component {
             messagetype: "hidden",
             messagecontent: "",
             day: true,
-            week: false,
             month: false
         }
     }
@@ -145,17 +131,17 @@ class App extends React.Component {
     }
     handleChange = (event) => {
         const newFormType = event.target.value;
-        for (let key of Object.keys(this.state)) {
-            if (key === newFormType){
-                this.setState({
-                    [key]: true
-                });
-            }
-            else {
-                this.setState({
-                    [key]: false
-                });
-            }
+        if (newFormType === "day"){
+            this.setState({
+                month: false,
+                day: true
+            })
+        }
+        else{
+            this.setState({
+                month: true,
+                day: false
+            })
         }
         // reset message contents to hidden
         this.setState({
@@ -176,19 +162,6 @@ class App extends React.Component {
                         messagecontent={this.state.messagecontent}
                     />
                     <DayForm postData={this.postData}/>
-                </div>
-            );
-        }
-        else if (this.state.week){
-            return(
-                <div>
-                    <SelectTitle handleChange={this.handleChange}/>
-                    <div className="spacer-tiny"></div>
-                    <Message 
-                        messagetype={this.state.messagetype}
-                        messagecontent={this.state.messagecontent}
-                    />
-                    <WeekForm postData={this.postData}/>
                 </div>
             );
         }

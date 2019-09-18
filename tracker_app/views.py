@@ -12,7 +12,7 @@ import simplejson as json
 import csv
 import re
 
-from . import consolidate
+from . import helper
 """-------------------------------------------------------------------------"""
 # Create your views here.
 def index(request):
@@ -86,9 +86,6 @@ def view_hours(request, table_type):
     
     if table_type == "daily":
         log = models.Daily_log
-    elif table_type == "weekly":
-        log = models.Weekly_log
-        headings.pop()
     elif table_type == "monthly":
         log = models.Monthly_log
         headings.pop()
@@ -100,7 +97,7 @@ def view_hours(request, table_type):
         context = {
             "headings": False,
             "data": False,
-            "message": "Error: Incorrect URL Path",
+            "message": "Error: Incorrect URL Path :|",
             "table_type": "No Such Table"
         }
         return render(request, "tracker_app/view-hours.html", context)
@@ -130,7 +127,7 @@ def view_hours(request, table_type):
 
 @login_required
 def log_data(request, log_type):
-    # get POST DATA, prepare initial variables for monthly/weekly
+    # get POST DATA, prepare initial variables for monthly
     request_data = json.loads(request.body)
     devisor = 1
     data_set = {
@@ -139,7 +136,7 @@ def log_data(request, log_type):
         request_data["obs_time"]
     }
 
-    # customize which fields need to be validated
+    # customize required fields
     if log_type == "day":
         data_set = {
             request_data["date"],
@@ -200,36 +197,65 @@ def log_data(request, log_type):
         try:
             new_log.save()
         except:
+            # error if date is not unique
             return HttpResponse(json.dumps({
                 "status": "error",
                 "message": "This date has already been logged."
             }))
 
-    # ----------- Log User Data in the Weekly Table --------- #        
-    elif log_type == "week":
-        # add data to weekly
-        new_log = models.Weekly_log(
-            user_id=models.User.objects.get(pk=request.user.id),
-            date=request_data["date"],
-            session_hours=session_hours,
-            observed_hours=obs_time
-        )
+        # update monthly log if possible
+        month = helper.convert_month(regex.search(
+            request_data["date"]).group(2))
+        year = regex.search(request_data["date"]).group(1)
 
-        # TODO: check if the week has already been logged
-        try: 
-            new_log.save()
-        except:
-            return HttpResponse(json.dumps({
-                "status": "error",
-                "message": "This date has already been logged."
-            }))
+        # check if corresponding date exists
+        try:
+            current_month_log = models.Monthly_log.objects.get(
+                month=month, 
+                year=year
+            )
+
+        # create new month log if None exists
+        except models.Monthly_log.DoesNotExist:
+            print("No month row for this date")
+            new_month_log = models.Monthly_log(
+                user_id=models.User.objects.get(pk=request.user.id),
+                year=year,
+                month=month,
+                session_hours=session_hours,
+                observed_hours=obs_time,
+                mutable=True,
+            )
+            # save new row
+            try:
+                new_month_log.save()
+            except:
+                return HttpResponse(json.dumps({
+                    "status": "unknown error",
+                    "message": "Monthly log could not be updated."
+                }))
+        else:
+            print("There is already row for this date")
+            # check if row is currently mutable
+            if current_month_log.mutable:
+                # update hours
+                current_month_log.session_hours = round(
+                    float(current_month_log.session_hours) + session_hours, 2
+                )
+                current_month_log.observed_hours = round(
+                    float(current_month_log.observed_hours) + obs_time, 2
+                )
+                # save update
+                current_month_log.save()
+            else:
+                print("cannot update this data")
 
     # ----------- Log User Data in the Monthly Table --------- #
     else:
         # add data to monthly log
         new_log = models.Monthly_log(
             user_id=models.User.objects.get(pk=request.user.id),
-            month=consolidate.convert_month(
+            month=helper.convert_month(
                 regex.search(request_data["date"]).group(2)
             ),
             year=regex.search(request_data["date"]).group(1),
@@ -240,6 +266,7 @@ def log_data(request, log_type):
         try: 
             new_log.save()
         except:
+            # error if date is not unique
             return HttpResponse(json.dumps({
                 "status": "error",
                 "message": "This date has already been logged."
