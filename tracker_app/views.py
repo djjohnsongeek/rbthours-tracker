@@ -85,9 +85,11 @@ def view_hours(request, table_type):
     headings = ["date", "session_hours", "observed_hours", "supervisor"]
     
     if table_type == "daily":
+        order = "date"
         log = models.Daily_log
     elif table_type == "monthly":
         log = models.Monthly_log
+        order = "month"
         headings.pop()
         headings.pop(0)
         headings.insert(0, "year")
@@ -104,7 +106,7 @@ def view_hours(request, table_type):
 
     # get user's data from table
     try:
-        user_hours = log.objects.filter(user_id=request.user.id)
+        user_hours = log.objects.filter(user_id=request.user.id).order_by(order)
     except log.DoesNotExist:
         user_hours = False
         headings = False
