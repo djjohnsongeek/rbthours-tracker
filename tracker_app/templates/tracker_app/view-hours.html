@@ -25,9 +25,10 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in data %}
-                <tr>
-                    {% for fields, value in row.fields.items %}
+                {% for id, row in data %}
+                <tr id="{{ id }}">
+                    <td style="display:none;" id="delete button">&#215;</td>
+                    {% for value in row.values %}
                     <td>{{ value }}</td>
                     {% endfor %}
                 </tr>

@@ -81,18 +81,12 @@ def register(request):
 
 @login_required
 def view_hours(request, table_type):
-    # Set prepare proper Model table and fields
-    headings = ["date", "session_hours", "observed_hours", "supervisor"]
+    # Set prepare proper Models
     
     if table_type == "daily":
         log = models.Daily_log
     elif table_type == "monthly":
         log = models.Monthly_log
-        headings.pop()
-        headings.pop(0)
-        headings.insert(0, "month")
-        headings.insert(0, "year")
-        print(headings)
     else:
         context = {
             "headings": False,
@@ -105,32 +99,39 @@ def view_hours(request, table_type):
     # get user's data from table
     try:
         if table_type == "daily":
-            user_hours = log.objects.filter(
-                user_id=request.user.id).order_by("date")
+            user_data = log.objects.filter(
+                user_id=request.user.id).order_by("date").values(
+                    "id", "date", "session_hours",
+                    "observed_hours", "supervisor"
+                )
         else:
-            user_hours = log.objects.filter(
-                user_id=request.user.id).order_by("year", "month")
-
+            user_data = log.objects.filter(
+                user_id=request.user.id).order_by("year", "month").values(
+                    "id", "year", "month",
+                    "session_hours", "observed_hours"
+                )
+    # check if no data can be found
     except log.DoesNotExist:
-        user_hours = False
+        user_data = False
         headings = False
-    
-    # convert monthly log month index's to their string form
-    if table_type == "monthly":
-        for row in user_hours:
-            row.month = helper.convert_month(row.month)
 
-    data = serializers.serialize("python", user_hours, fields=headings)
-
-    # prepare headings for templace render
-    for i, title in enumerate(headings):
-        headings[i] = title.replace("_", " ")
-        headings[i] = headings[i].upper()
+    # convert monthly log month indexs to their string form
+    id_list = []
+    for row in user_data:
+        if table_type == "monthly":
+            row["month"] = helper.convert_month(row["month"])
+        id_list.append(row["id"])
+        del row["id"]
     
+    zipped_data = zip(id_list, user_data)
+
+    # prepare headings for template replacement
+    headings = [key.upper().replace("_", " ") for key in user_data[0].keys()]
+
     # create context
     context = {
         "headings": headings,
-        "data": data,
+        "data": zipped_data,
         "message": "No Data Found :(",
         "table_type": table_type
     }
