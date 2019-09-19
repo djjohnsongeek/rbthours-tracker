@@ -10,22 +10,20 @@ class Daily_log(models.Model):
     observed_hours = models.DecimalField(max_digits=4, decimal_places=2)
     supervisor = models.CharField(max_length=256)
 
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(
-    #             fields=["user_id", "date"], name="unique_daily_logs"
-    #         )
-    #     ]
-
 class Monthly_log(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.IntegerField(
-        validators=[
+        validators = [
             MaxValueValidator(5000),
             MinValueValidator(1900)            
         ]
     )
-    month = models.CharField(max_length=9)
+    month = models.IntegerField(
+        validators = [
+            MaxValueValidator(12),
+            MinValueValidator(1)
+        ]
+    )
     session_hours = models.DecimalField(max_digits=5, decimal_places=2)
     observed_hours = models.DecimalField(max_digits=5, decimal_places=2)
     mutable = models.BooleanField(default=False)

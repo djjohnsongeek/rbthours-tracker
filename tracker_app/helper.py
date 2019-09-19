@@ -8,7 +8,7 @@ def convert_month(num:str):
     try:
         num = int(num)
     except ValueError:
-        return(False)
+        return(1)
     
     months = [
         "January","Febuary","March","April","May","June",

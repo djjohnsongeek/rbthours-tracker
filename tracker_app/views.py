@@ -85,15 +85,13 @@ def view_hours(request, table_type):
     headings = ["date", "session_hours", "observed_hours", "supervisor"]
     
     if table_type == "daily":
-        order = "date"
         log = models.Daily_log
     elif table_type == "monthly":
         log = models.Monthly_log
-        order = "month"
         headings.pop()
         headings.pop(0)
-        headings.insert(0, "year")
         headings.insert(0, "month")
+        headings.insert(0, "year")
         print(headings)
     else:
         context = {
@@ -106,10 +104,21 @@ def view_hours(request, table_type):
 
     # get user's data from table
     try:
-        user_hours = log.objects.filter(user_id=request.user.id).order_by(order)
+        if table_type == "daily":
+            user_hours = log.objects.filter(
+                user_id=request.user.id).order_by("date")
+        else:
+            user_hours = log.objects.filter(
+                user_id=request.user.id).order_by("year", "month")
+
     except log.DoesNotExist:
         user_hours = False
         headings = False
+    
+    # convert monthly log month index's to their string form
+    if table_type == "monthly":
+        for row in user_hours:
+            row.month = helper.convert_month(row.month)
 
     data = serializers.serialize("python", user_hours, fields=headings)
 
@@ -206,7 +215,7 @@ def log_data(request, log_type):
             }))
 
         # update monthly log if possible
-        month = helper.convert_month(regex.search(
+        month = int(regex.search(
             request_data["date"]).group(2))
         year = regex.search(request_data["date"]).group(1)
 
@@ -257,9 +266,7 @@ def log_data(request, log_type):
         # add data to monthly log
         new_log = models.Monthly_log(
             user_id=models.User.objects.get(pk=request.user.id),
-            month=helper.convert_month(
-                regex.search(request_data["date"]).group(2)
-            ),
+            month=int(regex.search(request_data["date"]).group(2)),
             year=regex.search(request_data["date"]).group(1),
             session_hours=session_hours,
             observed_hours=obs_time
