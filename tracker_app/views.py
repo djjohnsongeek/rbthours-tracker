@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.conf import settings
 from django.urls import reverse
 from django.core import serializers
 from django.contrib import messages
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from . import models
 from django.http import HttpResponse
 
+import os
 import simplejson as json
 import csv
 import re
@@ -81,7 +83,7 @@ def register(request):
 
 @login_required
 def view_hours(request, table_type):
-    # Set prepare proper Models
+    # Prepare proper Models
     
     if table_type == "daily":
         log = models.Daily_log
@@ -120,6 +122,11 @@ def view_hours(request, table_type):
     for row in user_data:
         if table_type == "monthly":
             row["month"] = helper.convert_month(row["month"])
+            if .05 * float(row["session_hours"]) <= float(row["observed_hours"]):
+                row["5% ?"] = "Yes"
+            else:
+                row["5% ?"] = "No"
+
         id_list.append(row["id"])
         del row["id"]
     
@@ -133,7 +140,7 @@ def view_hours(request, table_type):
         "headings": headings,
         "data": zipped_data,
         "message": "No Data Found :(",
-        "table_type": table_type
+        "table_type": table_type.capitalize() + " Logs"
     }
     return render(request, "tracker_app/view-hours.html", context)
 
@@ -289,3 +296,100 @@ def log_data(request, log_type):
         "status": "success",
         "message": "Data Logged Successfully"
     }))
+
+@login_required
+def delete_data(request, data_type, primary_key):
+    url_error = HttpResponse(
+        json.dumps({
+            "status": "error",
+            "message": "Invalid URL"
+        }))
+
+    # check for proper method
+    if request.method != "DELETE":
+        return HttpResponse(json.dumps({
+            "status": "error",
+            "message": "Method not Allowed"
+        }))
+
+    # check for valid url arguments
+    if data_type == "daily":
+        log_type = models.Daily_log
+    elif data_type == "monthly":
+        log_type = models.Monthly_log
+    else:
+        return url_error
+
+    # find log to delete
+    try:
+        row_for_delete = log_type.objects.get(pk=int(primary_key))
+    except ValueError:
+        return url_error
+    except log_type.DoesNotExist:
+        return HttpResponse(json.dumps({
+            "status": "error",
+            "message": "This log does not exist"
+        }))
+
+
+    row_for_delete.delete()
+    return HttpResponse(json.dumps({
+        "status": "success",
+        "message": "Data Deleted"
+    }))
+
+@login_required
+def download(request, user_id, file_name):
+    no_file_error = redirect(
+        reverse("view_hours", kwargs={"table_type": "daily"})
+    )
+
+    # ensure safe html args, query for user logs
+    if file_name == "daily":
+        fieldnames = ["date", "session_hours", "observed_hours", "supervisor"]
+        user_logs = models.Daily_log.objects.filter(
+            user_id=request.user.id
+        ).order_by("date").values(
+            "date", "session_hours",
+            "observed_hours", "supervisor"
+        )
+
+    elif file_name == "monthly":
+        fieldnames = ["year", "month", "session_hours", "observed_hours"]
+        user_logs = models.Monthly_log.objects.filter(
+            user_id=request.user.id
+        ).order_by("year", "month").values(
+            "year", "month","session_hours",
+            "observed_hours"
+        )
+    else:
+        messages.error(request, "No File Found")
+        return no_file_error
+
+
+    # prepare file path
+    file_name = file_name + ".csv"
+    path = os.path.join(
+        settings.BASE_DIR, "userlog_files", str(user_id), file_name
+    )
+
+    # remove last file
+    if os.path.exists(path):
+        os.remove(path)
+
+    # write new file
+    with open(path, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for data in user_logs:
+            writer.writerow(data)
+    
+    # read and send file data
+    if os.path.exists(path):
+        with open(path) as f:
+            response = HttpResponse(f.read(), content_type="text/csv")
+            response["Content-Disposition"] = f"attachment/filename={file_name}"
+            return response
+
+    messages.error(request, "No File Found")
+    return no_file_error
