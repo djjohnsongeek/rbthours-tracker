@@ -75,8 +75,17 @@ def register(request):
         return redirect(reverse("register"))
 
     # create new user
-    new_user = User.objects.create_user(username, email, password)
-    new_user.save()
+    try:
+        new_user = User.objects.create_user(username, email, password)
+        new_user.save()
+    except:
+        messages.error(request, "Username already taken")
+        return redirect(reverse("register"))
+
+    # create user file path
+    current_user = User.objects.get(username=username)
+    path = os.path.join(settings.BASE_DIR, "userlog_files", str(current_user.pk))
+    os.mkdir(path)
 
     messages.success(request, "Account created!")
     return redirect(reverse("login_view"))
@@ -99,25 +108,30 @@ def view_hours(request, table_type):
         return render(request, "tracker_app/view-hours.html", context)
 
     # get user's data from table
-    try:
-        if table_type == "daily":
-            user_data = log.objects.filter(
-                user_id=request.user.id).order_by("date").values(
-                    "id", "date", "session_hours",
-                    "observed_hours", "supervisor"
-                )
-        else:
-            user_data = log.objects.filter(
-                user_id=request.user.id).order_by("year", "month").values(
-                    "id", "year", "month",
-                    "session_hours", "observed_hours"
-                )
-    # check if no data can be found
-    except log.DoesNotExist:
-        user_data = False
-        headings = False
+    if table_type == "daily":
+        user_data = log.objects.filter(
+            user_id=request.user.id).order_by("date").values(
+                "id", "date", "session_hours",
+                "observed_hours", "supervisor"
+            )
+    else:
+        user_data = log.objects.filter(
+            user_id=request.user.id).order_by("year", "month").values(
+                "id", "year", "month",
+                "session_hours", "observed_hours"
+            )
 
-    # convert monthly log month indexs to their string form
+    # check for no data
+    if not user_data.exists():
+        context = {
+            "headings": False,
+            "data": False,
+            "message": "No Data Found :(",
+            "table_type": table_type.capitalize() + " Logs"
+        }
+        return render(request, "tracker_app/view-hours.html", context)
+
+    # convert monthly log month numbers to their string form
     id_list = []
     for row in user_data:
         if table_type == "monthly":
@@ -140,7 +154,9 @@ def view_hours(request, table_type):
         "headings": headings,
         "data": zipped_data,
         "message": "No Data Found :(",
+        "table_type_arg": table_type,
         "table_type": table_type.capitalize() + " Logs"
+
     }
     return render(request, "tracker_app/view-hours.html", context)
 
