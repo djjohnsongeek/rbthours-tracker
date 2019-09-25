@@ -25,6 +25,10 @@ select::-ms-expand {
     font-size: 1.8rem;
     margin-bottom: 10px;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: rgb(97, 97, 97);
+}
+#select-viewhours:hover{
+    color: white;
 }
 /* BASE PAGE HEADERS */
 .heading{
@@ -156,28 +160,49 @@ input{
     width: 90%;
 }
 
-.hours-table td, th {
+td, th {
     border: 1px solid white;
     padding: 20px;
 }
 th {
-    background: white;
-    color:rgb(55, 65, 65);
+    background-color: rgb(55, 65, 65);
+    color: #4bc2b4;
+    border: none;
 }
-caption{
-    background-color:#1b998b;
+#yes{
+    color: rgb(0, 240, 0);
+    font-weight: bold;
+}
+#no{
+    color:rgb(255, 85, 85);
+    font-weight: bold;
+
+}
+#table-caption{
+    /* background-color:#1b998b; */
+    font-size: 4rem;
     color: white;
-    font-size: 2rem;
     padding: 5px;
-    border: 1px solid white;
-    border-bottom: hidden;
+    border: none;
 }
 .th-empty-table{
     background-color: red;
-    color: white;
-}
-.tr-empty-table{
     border: 1px solid white;
+}
+
+.delete-data{
+    border: hidden;
+    padding: 10px;
+}
+.delete-button{
+    font-size: 3rem;
+}
+.delete-button:hover{
+    color: red;
+    cursor: pointer;
+}
+#hidden-heading{
+    background-color: rgb(55, 65, 65);
 }
 /* SERVER MESSAGES */
 .error{
@@ -261,10 +286,12 @@ caption{
     html {
         font-size: 12px;
     }
-    .heading {
+    .headin{
         font-size: 3.5rem;
     }
-    
+    #table-caption {
+        font-size: 2.75rem;
+    }
     .subheading {
         font-size: 2rem;
     }

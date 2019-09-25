@@ -2,9 +2,15 @@
 {% block title %}View Hours{% endblock %}
 {% block body %}
 <div class="header">
-    <span class="heading">Your RBT</span><br/>
-    <span class="subheading">Supervision Hours</span>
-    <div class="spacer-small"></div>
+    {% if messages %}
+        {% for message in messages %}
+        <div class="{{ message.tags }}">
+            <span> {{ message }}</span>
+        </div>
+        {% endfor %}
+    {% endif %}
+    <span id="table-caption">{{ table_type }}</span>
+    <div class="spacer-tiny"></div>
     <div>
         <select id="select-viewhours">
                 <option value="" disabled selected>Pick Time Frame</option>
@@ -15,10 +21,10 @@
 </div>
 <div class="table-container">
     <table class="hours-table">
-        <caption id="table-caption">{{ table_type.capitalize }}</caption>
         {% if data %}
             <thead>
                 <tr>
+                    <th id="hidden-heading"></th>
                     {% for heading in headings %}
                     <th>{{ heading }}</th>
                     {% endfor %}
@@ -27,9 +33,15 @@
             <tbody>
                 {% for id, row in data %}
                 <tr id="{{ id }}">
-                    <td style="display:none;" id="delete button">&#215;</td>
+                    <td class="delete-data"><span class="delete-button">&#215;</span></td>
                     {% for value in row.values %}
-                    <td>{{ value }}</td>
+                        {% if value == "Yes" %}
+                            <td id="yes">{{ value }}</td>
+                        {% elif value == "No" %}
+                            <td id="no">{{ value }}</td>
+                        {% else %}
+                            <td> {{ value }}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -45,6 +57,8 @@
     </div>
 
 <script type="text/javascript">
+
+    // change table to daily or monthly based on user's selection
     document.getElementById("select-viewhours").addEventListener("change", () => {
         const tableType = document.getElementById("select-viewhours").value;
 
@@ -53,5 +67,48 @@
             window.location = `http://127.0.0.1:8000/view-hours/${tableType}`;
         }
     })
+
+    // get tabletype value TODO
+    
+    const tableRows = document.getElementsByTagName("tr");
+    let i;
+
+    for (i = 0; i < tableRows.length; i++) {
+        tableRows[i].addEventListener("click", (event) => {
+            const tableType = document.getElementById("table-caption").innerHTML.replace(" Logs", "").toLowerCase();
+            const tr_element = event.target.parentElement.parentElement;
+            const pk = tr_element.id;
+
+            // setup url and data for the DELETE request
+            const url = `http://127.0.0.1:8000/delete-data/${tableType}/${pk}`;
+            const data = {
+                "csrfmiddlewaretoken": Cookies.get("csrftoken")
+            };
+
+            // send DELETE request to server
+            if (tr_element.parentElement === document.getElementsByTagName("tbody")[0]){
+                fetch(url, {
+                    method: "DELETE",
+                    credentials: "include",
+                    headers: {
+                        "X-CSRFToken": Cookies.get("csrftoken"),
+                        "Content-type": "application/json",
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                    body: JSON.stringify(data)
+                }).then(res => res.json())
+                .then(response =>{
+                    if (response.status === "success"){
+                        tr_element.remove();
+                    }
+                    console.log(response.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+            // TODO add animation
+        });
+    }
 </script>
 {% endblock %}
