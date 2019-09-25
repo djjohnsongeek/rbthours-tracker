@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.urls import reverse
-from django.core import serializers
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -356,6 +356,9 @@ def delete_data(request, data_type, primary_key):
 
 @login_required
 def download(request, user_id, file_name):
+    if int(user_id) != request.user.id:
+        raise PermissionDenied
+        
     no_file_error = redirect(
         reverse("view_hours", kwargs={"table_type": "daily"})
     )
