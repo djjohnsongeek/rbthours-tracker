@@ -71,13 +71,18 @@ a{
     margin-left: 20px;
     margin-right: 20px;
 }
+#download-link{
+    font-size: 1rem;
+}
 .nav-devider{
     font-size: 1.5rem;
     color: grey;
 }
 a:hover{
     color: white;
+    text-decoration: underline;
 }
+
 .link-register{
     font-size: 1rem;
     margin: 5px;
@@ -187,6 +192,7 @@ th {
 }
 .th-empty-table{
     background-color: red;
+    color: white;
     border: 1px solid white;
 }
 
