@@ -73,12 +73,16 @@ a{
 }
 #download-link{
     font-size: 1rem;
+    color: #1b998b;
+    background-color:rgb(55, 65, 65);
+    border: none;
+    cursor: pointer;
 }
 .nav-devider{
     font-size: 1.5rem;
     color: grey;
 }
-a:hover{
+a:hover, #download-link:hover{
     color: white;
     text-decoration: underline;
 }
@@ -238,6 +242,72 @@ th {
     display: hidden;
 }
 
+/* Modal Alerts */
+.modal{
+    z-index: 1;
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    font-family: 'Montserrat', sans-serif;
+    background-color: rgb(95, 95, 95);
+    color: red;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid rgb(180, 180, 180);
+    border-radius: 3px;
+    width: 40%;
+    font-size: 1.4rem;
+    position: relative;
+    left: auto;
+
+    /*animation-name: "slide-in-top";
+    animation-duration: .3s;
+    -webkit-animation-name: "slide-in-top";
+    -webkit-animation-duration: .3s;*/
+}
+
+#close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+#close:hover{
+    color: rgb(228, 13, 13);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#btn-continue-download, #btn-cancel-download{
+    font-family: 'Montserrat', sans-serif;
+    width: 120px;
+    padding: 10px;
+    border-radius: 3px;
+    color:white;
+    font-size: 1rem;
+    background-color: #888;
+    border: 1px solid white;
+}
+#btn-continue-download:hover{
+    border-color: rgb(122, 255, 96);
+    background-color: rgba(0, 219, 0, 0.719);
+    color: black;
+    font-weight: bold;
+}
+#btn-cancel-download:hover {
+    border-color: rgb(255, 111, 111);
+    background-color: rgba(255, 0, 0, 0.692);
+    color: black;
+    font-weight: bold;
+}
 /* MOBILE (SMALL) */
 @media screen and (max-width: 1000px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{

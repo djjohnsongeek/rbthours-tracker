@@ -17,7 +17,9 @@
                 <option value="daily">Daily</option>
                 <option value="monthly">Monthly</option>
         </select><br/>
-        <a id="download-link" href="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}">Download</a>
+        <form id="download-form" action="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
+            <button id="download-link">Download</button>
+        </form>
     </div>
 </div>
 <div class="table-container">
@@ -47,7 +49,7 @@
                 </tr>
                 {% endfor %}
             </tbody>
-        {% elif not hours %}
+        {% elif not data %}
         <thead class="tr-empty-table">
             <tr>
                 <th class="th-empty-table">{{ message }}</th>
@@ -56,9 +58,8 @@
         {% endif %}
     </table>
     </div>
-
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script type="text/javascript">
-
     // change table to daily or monthly based on user's selection
     document.getElementById("select-viewhours").addEventListener("change", () => {
         const tableType = document.getElementById("select-viewhours").value;
@@ -67,13 +68,11 @@
         if (tableType !== document.getElementById("table-caption").innerHTML.toLowerCase()){
             window.location = `http://127.0.0.1:8000/view-hours/${tableType}`;
         }
-    })
+    });
 
-    // get tabletype value TODO
-    
+    // add event listeners to each row of the table
     const tableRows = document.getElementsByTagName("tr");
     let i;
-
     for (i = 0; i < tableRows.length; i++) {
         tableRows[i].addEventListener("click", (event) => {
             const tableType = document.getElementById("table-caption").innerHTML.replace(" Logs", "").toLowerCase();
