@@ -13,6 +13,7 @@ import os
 import simplejson as json
 import csv
 import re
+import datetime
 
 from . import helper
 """-------------------------------------------------------------------------"""
@@ -26,6 +27,42 @@ def index(request):
 def login_view(request):
     if request.method == "GET":
         logout(request)
+
+        # prepare current date, file path
+        today = datetime.date.today()
+        one_year = datetime.timedelta(days=365)
+        path = os.path.join(settings.BASE_DIR, "delete_date", "date.txt")
+
+        # create file if missing
+        if not os.path.exists(path):
+            with open(path, "w") as f:
+                f.write(datetime.date.strftime(today + one_year, "%m/%d/%Y"))
+
+        # get date
+        with open(path, "r") as f:
+            string_date = f.read()
+
+        # convert date from file to date obj
+        delete_date = datetime.datetime.strptime(string_date, "%m/%d/%Y").date()
+        time_till_delete = delete_date - today
+
+        # delete all user logs, store new date
+        if delete_date == today:
+            models.Monthly_log.objects.all().delete()
+            models.Daily_log.objects.all().delete()        
+            
+            new_date = datetime.datetime.today() + one_year
+            with open(path, "w") as f:
+                f.write(datetime.date.strftime(new_date, "%m/%d/%Y"))
+
+        elif time_till_delete.days <= 14:
+            # warn user with message at login page
+            messages.error(
+                request, f"On {helper.convert_month(delete_date.month)}" 
+                         f" {delete_date.day}, {delete_date.year} all user "
+                         f"logs will be deleted. Download them now."
+            )
+
         return render(request, "tracker_app/login.html")
 
     # POST REQUEST
@@ -203,8 +240,8 @@ def log_data(request, log_type):
 
     # check for proper min/hours format
     try:
-        session_hours = int(request_data["hours"])
-        obs_time = round((int(request_data["obs_time"]) / devisor), 2)
+        session_hours = float(request_data["hours"])
+        obs_time = round((float(request_data["obs_time"]) / devisor), 2)
     except ValueError:
         return HttpResponse(json.dumps({
             "status": "error",
@@ -246,6 +283,7 @@ def log_data(request, log_type):
         # check if corresponding date exists
         try:
             current_month_log = models.Monthly_log.objects.get(
+                user_id=request.user.id,
                 month=month, 
                 year=year
             )
@@ -302,7 +340,7 @@ def log_data(request, log_type):
             # error if date is not unique
             return HttpResponse(json.dumps({
                 "status": "error",
-                "message": "This date has already been logged."
+                "message": "This Month has already been logged."
             }))
 
         print("logged monthly data")
@@ -402,7 +440,7 @@ def download(request, user_id, file_name):
         writer.writeheader()
         for data in user_logs:
             writer.writerow(data)
-    
+
     # read and send file data
     if os.path.exists(path):
         with open(path) as f:
