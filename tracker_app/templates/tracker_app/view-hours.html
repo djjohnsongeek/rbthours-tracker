@@ -17,9 +17,11 @@
                 <option value="daily">Daily</option>
                 <option value="monthly">Monthly</option>
         </select><br/>
+        {% if data %}
         <form id="download-form" action="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
             <button id="download-link">Download</button>
         </form>
+        {% endif %}
     </div>
 </div>
 <div class="table-container">
