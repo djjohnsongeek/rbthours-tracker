@@ -28,7 +28,8 @@ def login_view(request):
     if request.method == "GET":
         logout(request)
 
-        # prepare current date, file path
+        # prepare current date, file path, response obj
+        response = render(request, "tracker_app/login.html")
         today = datetime.date.today()
         one_year = datetime.timedelta(days=365)
         path = os.path.join(settings.BASE_DIR, "delete_date", "date.txt")
@@ -62,7 +63,7 @@ def login_view(request):
                          f" {delete_date.day}, {delete_date.year} all user "
                          f"logs will be deleted. Download them now."
             )
-
+        
         return render(request, "tracker_app/login.html")
 
     # POST REQUEST
@@ -359,6 +360,13 @@ def delete_data(request, data_type, primary_key):
             "message": "Invalid URL"
         }))
 
+    nolog_error = HttpResponse(
+        json.dumps({
+            "status": "error",
+            "message": "This log does not exist"
+        })
+    )
+
     # check for proper method
     if request.method != "DELETE":
         return HttpResponse(json.dumps({
@@ -380,13 +388,29 @@ def delete_data(request, data_type, primary_key):
     except ValueError:
         return url_error
     except log_type.DoesNotExist:
-        return HttpResponse(json.dumps({
-            "status": "error",
-            "message": "This log does not exist"
-        }))
+        return nolog_error
 
+    # update monthly info if necssary
+    if data_type == "daily":
+        date = datetime.datetime.strftime(row_for_delete.date, "%Y/%m/%d/")
+        date = date.split("/")
+        year = int(date[0])
+        month = (int(date[1]))
+        obs_hours = row_for_delete.observed_hours
+        session_hours = row_for_delete.session_hours
 
+        try:
+            monthly_log = models.Monthly_log.objects.get(user_id=request.user.id, month=month, year=year)
+
+            if monthly_log.mutable:
+                monthly_log.observed_hours = monthly_log.observed_hours - obs_hours
+                monthly_log.session_hours = monthly_log.session_hours - session_hours
+                monthly_log.save()
+        except models.Monthly_log.DoesNotExist:
+            pass
+    
     row_for_delete.delete()
+
     return HttpResponse(json.dumps({
         "status": "success",
         "message": "Data Deleted"
