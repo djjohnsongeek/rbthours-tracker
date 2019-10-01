@@ -229,7 +229,7 @@ function (_React$Component6) {
       } // setup url and data for the POST request
 
 
-      var url = "http://127.0.0.1:8000/log-data/".concat(logType);
+      var url = "https://rbt-tracker.herokuapp.com/log-data/".concat(logType);
       var data = {
         "date": date,
         "hours": hours,

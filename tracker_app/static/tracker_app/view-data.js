@@ -4,7 +4,7 @@
 
         // no table is rendered if there is no data
         if (tableType !== document.getElementById("table-caption").innerHTML.toLowerCase()){
-            window.location = `http://127.0.0.1:8000/view-hours/${tableType}`;
+            window.location = `https://rbt-tracker.herokuapp.com/view-hours/${tableType}`;
         }
     });
 
@@ -18,7 +18,7 @@
             const pk = tr_element.id;
 
             // setup url and data for the DELETE request
-            const url = `http://127.0.0.1:8000/delete-data/${tableType}/${pk}`;
+            const url = `https://rbt-tracker.herokuapp.com/delete-data/${tableType}/${pk}`;
             const data = {
                 "csrfmiddlewaretoken": Cookies.get("csrftoken")
             };
