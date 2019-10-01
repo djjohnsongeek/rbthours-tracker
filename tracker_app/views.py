@@ -122,7 +122,12 @@ def register(request):
 
     # create user file path
     current_user = User.objects.get(username=username)
-    path = os.path.join(settings.BASE_DIR, "userlog_files", str(current_user.pk))
+    file_path = os.path.join(settings.BASE_DIR, "userlog_files")
+    try:
+        os.mkdir(file_path)
+    except FileExistsError:
+        pass
+    path = os.path.join(file_path, str(current_user.pk))
     os.mkdir(path)
 
     messages.success(request, "Account created!")
@@ -459,11 +464,14 @@ def download(request, user_id, file_name):
         os.remove(path)
 
     # write new file
-    with open(path, "w", newline="") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for data in user_logs:
-            writer.writerow(data)
+    try:
+        with open(path, "w", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for data in user_logs:
+                writer.writerow(data)
+    except FileNotFoundError:
+        pass
 
     # read and send file data
     if os.path.exists(path):
