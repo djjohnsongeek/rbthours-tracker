@@ -1,4 +1,4 @@
-/* SELET HEADINGS */
+/* SELECT HEADINGS */
 select{
     text-align-last: center;
     font-size: 3.5rem;
@@ -29,6 +29,23 @@ select::-ms-expand {
 }
 #select-viewhours:hover{
     color: white;
+}
+/* RBT select box */
+#rbt-select{
+    text-align-last: center;
+    font-size: 1.5rem;
+    background-color: rgb(55, 65, 65);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+#rbt-select:hover{
+    border: 1px solid white;
+    background-color: white;
+    color: rgb(55, 65, 65);
 }
 /* BASE PAGE HEADERS */
 .heading{
@@ -95,6 +112,10 @@ a:hover, #download-link:hover{
 /* LOGIN STYLE */
 .input-login{
     width: 30%;
+}
+
+.input-login-name{
+    width: calc(15% - 8px);
 }
 
 #btn-login{
@@ -193,6 +214,10 @@ th {
     color: white;
     padding: 5px;
     border: none;
+}
+.super-view-table-captions{
+    font-size: 3rem;
+    color: white;
 }
 .th-empty-table{
     background-color: red;
