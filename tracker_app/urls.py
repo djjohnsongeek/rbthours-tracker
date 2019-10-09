@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("view-rbt/<str:rbt>", views.supervisor_index, name="supervisor_index"),
     path("login", views.login_view, name="login_view"),
     path("logout", views.logout_view, name="logout_view"),
     path("register", views.register, name="register"),

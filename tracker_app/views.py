@@ -5,7 +5,8 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.contrib.auth.models import User, Group
 from . import models
 from django.http import HttpResponse
 
@@ -24,6 +25,90 @@ def index(request):
     else:
         return redirect(reverse("login_view"))
 
+def supervisor_index(request, rbt):
+    if not request.user.is_authenticated:
+        return redirect(reverse("login_view"))
+
+    supervisor_perms = [
+        "tracker_app.view_daily_log",
+        "tracker_app.change_monthly_log",
+        "tracker_app.view_monthly_log",
+        "tracker_app.change_daily_log"
+    ]
+    
+    # render template if user is indeed a supervisor
+    if request.user.has_perms(supervisor_perms):
+        supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
+
+        # get RBT names
+        rbts = User.objects.exclude(
+            groups=supervisor_grp_id
+        ).exclude(
+            is_superuser=True
+        ).values("first_name", "last_name")
+
+        # parse rbt name
+        try:
+            firstname, lastname = rbt.split(" ")
+        except ValueError:
+            return redirect(reverse("supervisor_index", args=["no user"]))
+
+        # check for default value
+        message = None
+        if rbt == "no user":
+            daily_log_headings = []
+            monthly_log_headings = []
+            daily_data = False
+            caption_bool = False
+
+        # attempt to lookup name
+        else:
+            # get selected RBT's data
+            try:
+                user_id = User.objects.get(first_name=firstname, last_name=lastname).id
+            except User.DoesNotExist:
+                return redirect(reverse("supervisor_index", args=["no user"]))
+
+            # prepare table headings
+            daily_log_headings = [
+                "DATE", "SESSION HOURS",
+                "OBSERVED HOURS", "SUPERVISOR",
+                "SIGNATURE", "DATE SIGNED"
+            ]
+            monthly_log_headings = [
+                "YEAR", "MONTH",
+                "SESSION HOURS", 
+                "OBSERVED HOURS",
+                "SIGNATURE", "DATE SIGNED"
+            ]
+
+            # get daily log data
+            daily_data = models.Daily_log.objects.filter(user_id_id=user_id).values(
+                "id", "date", "session_hours", "observed_hours",
+                "supervisor", "signature", "signature_date"
+            )
+
+            caption_bool = True
+            # check for empty queryset
+            if not daily_data:
+                message = "No Data :("
+                daily_data = False
+
+
+        context = {
+            "monthly_headings": monthly_log_headings,
+            "daily_headings": daily_log_headings,
+            "supervisor": True,
+            "users": rbts,
+            "daily_logs": daily_data,
+            "message": message,
+            "current_rbt": firstname + " " + lastname,
+            "caption": caption_bool
+        }
+        return render(request, "tracker_app/supervisor-view.html", context)
+
+    # otherwise redirect to index
+    return redirect(reverse("index"))
 def login_view(request):
     if request.method == "GET":
         logout(request)
@@ -47,7 +132,7 @@ def login_view(request):
         delete_date = datetime.datetime.strptime(string_date, "%m/%d/%Y").date()
         time_till_delete = delete_date - today
 
-        # delete all user logs, store new date
+        # delete all user logs on delete day, store new date
         if delete_date == today:
             models.Monthly_log.objects.all().delete()
             models.Daily_log.objects.all().delete()        
@@ -72,9 +157,26 @@ def login_view(request):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
         user = authenticate(request, username=username, password=password)
+
         if user:
+            # login user
             login(request, user)
+
+            supervisor_perms = [
+                "tracker_app.view_daily_log",
+                "tracker_app.change_monthly_log",
+                "tracker_app.view_monthly_log",
+                "tracker_app.change_daily_log"
+            ]
+
+            # redirect to supervisor page if user is supervisor
+            if user.has_perms(supervisor_perms):
+                return redirect(reverse("supervisor_index", args=["no user"]))
+
+            # otherwise render rbt page
             return redirect(reverse("index"))
+
+        # return error if login fails
         else:
             messages.error(request, "Invalid Credentials")
             return redirect(reverse("login_view"))
@@ -91,12 +193,14 @@ def register(request):
     
     # POST REQUESTS
     username = request.POST.get("username", "")
+    firstname = request.POST.get("firstname", "")
+    lastname = request.POST.get("lastname", "")
     email = request.POST.get("email", "")
     password = request.POST.get("password", "")
     confirm_pw = request.POST.get("confirm_pw", "")
 
     # check for empty fields
-    if "" in {username, email, password, confirm_pw}:
+    if "" in {username, firstname, lastname, email, password, confirm_pw}:
         messages.error(request, "All fields are required")
         return redirect(reverse("register"))
 
@@ -115,8 +219,9 @@ def register(request):
     # create new user
     try:
         new_user = User.objects.create_user(username, email, password)
-        new_user.save()
-    except:
+        new_user.last_name = lastname
+        new_user.first_name = firstname
+    except IntegrityError:
         messages.error(request, "Username already taken")
         return redirect(reverse("register"))
 
@@ -131,12 +236,11 @@ def register(request):
     os.mkdir(path)
 
     messages.success(request, "Account created!")
-    return redirect(reverse("login_view"))
+    return redirect(reverse("login_view", args=["none"]))
 
 @login_required
 def view_hours(request, table_type):
     # Prepare proper Models
-    
     if table_type == "daily":
         log = models.Daily_log
     elif table_type == "monthly":
@@ -155,13 +259,15 @@ def view_hours(request, table_type):
         user_data = log.objects.filter(
             user_id=request.user.id).order_by("date").values(
                 "id", "date", "session_hours",
-                "observed_hours", "supervisor"
+                "observed_hours", "supervisor",
+                "signature", "signature_date"
             )
     else:
         user_data = log.objects.filter(
             user_id=request.user.id).order_by("year", "month").values(
                 "id", "year", "month",
-                "session_hours", "observed_hours"
+                "session_hours", "observed_hours",
+                "signature", "signature_date"
             )
 
     # check for no data
@@ -274,7 +380,7 @@ def log_data(request, log_type):
 
         try:
             new_log.save()
-        except:
+        except IntegrityError:
             # error if date is not unique
             return HttpResponse(json.dumps({
                 "status": "error",
@@ -314,7 +420,6 @@ def log_data(request, log_type):
                     "message": "Monthly log could not be updated."
                 }))
         else:
-            print("There is already row for this date")
             # check if row is currently mutable
             if current_month_log.mutable:
                 # update hours
@@ -342,7 +447,7 @@ def log_data(request, log_type):
 
         try: 
             new_log.save()
-        except:
+        except IntegrityError:
             # error if date is not unique
             return HttpResponse(json.dumps({
                 "status": "error",
@@ -432,21 +537,23 @@ def download(request, user_id, file_name):
 
     # ensure safe html args, query for user logs
     if file_name == "daily":
-        fieldnames = ["date", "session_hours", "observed_hours", "supervisor"]
+        fieldnames = ["date", "session_hours", "observed_hours", "supervisor", "signature", "signature_date"]
         user_logs = models.Daily_log.objects.filter(
             user_id=request.user.id
         ).order_by("date").values(
             "date", "session_hours",
-            "observed_hours", "supervisor"
+            "observed_hours", "supervisor", 
+            "signature", "signature_date"
         )
 
     elif file_name == "monthly":
-        fieldnames = ["year", "month", "session_hours", "observed_hours"]
+        fieldnames = ["year", "month", "session_hours", "observed_hours", "signature", "signature_date"]
         user_logs = models.Monthly_log.objects.filter(
             user_id=request.user.id
         ).order_by("year", "month").values(
             "year", "month","session_hours",
-            "observed_hours"
+            "observed_hours", "signature", 
+            "signature_date"
         )
     else:
         messages.error(request, "No File Found")
