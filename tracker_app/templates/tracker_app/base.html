@@ -17,11 +17,15 @@
         {% if user.is_authenticated %}
         <nav>
             <div id="flex-container">
+                {% if supervisor %}
+                <a href="{% url 'logout_view' %}">Logout</a>
+                {% else %}
                     <a href="{% url 'index' %}">Log Hours</a>
                     <span class="nav-devider">|</span>
                     <a href="{% url 'view_hours' 'daily' %}">View Hours</a>
                     <span class="nav-devider">|</span>
                 <a href="{% url 'logout_view' %}">Logout</a>
+                {% endif %}
             </div>
             <hr/>
         </nav>
