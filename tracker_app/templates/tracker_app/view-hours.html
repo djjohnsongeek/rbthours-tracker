@@ -13,14 +13,14 @@
     <div class="spacer-tiny"></div>
     <div>
         <select id="select-viewhours">
-                <option value="" disabled selected>Pick Time Frame</option>
-                <option value="daily">Daily</option>
-                <option value="monthly">Monthly</option>
+            <option value="" disabled selected>Pick Time Frame</option>
+            <option value="daily">Daily</option>
+            <option value="monthly">Monthly</option>
         </select><br/>
         {% if data %}
-        <form id="download-form" action="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
-            <button id="download-link">Download</button>
-        </form>
+            <form id="download-form" action="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
+                <button id="download-link">Download</button>
+            </form>
         {% endif %}
     </div>
 </div>
@@ -29,9 +29,9 @@
         {% if data %}
             <thead>
                 <tr>
-                    <th id="hidden-heading"></th>
+                    <th class="hidden-heading"></th>
                     {% for heading in headings %}
-                    <th>{{ heading }}</th>
+                        <th>{{ heading }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -59,7 +59,7 @@
         </thead>
         {% endif %}
     </table>
-    </div>
-    {% load static %}
-    <script src="{% static 'tracker_app/view-data.js' %}" type="text/javascript"></script>
+</div>
+{% load static %}
+<script src="{% static 'tracker_app/view-data.js' %}" type="text/javascript"></script>
 {% endblock %}
