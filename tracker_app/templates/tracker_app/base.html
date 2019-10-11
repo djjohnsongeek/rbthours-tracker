@@ -13,7 +13,7 @@
         {% load static %}
         <link href="{% static 'tracker_app/styles.css' %}" rel="stylesheet" type="text/css">
     </head>
-    <body>
+    <body id="override-fontawesome">
         {% if user.is_authenticated %}
         <nav>
             <div id="flex-container">
