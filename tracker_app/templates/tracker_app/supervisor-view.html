@@ -1,47 +1,152 @@
 {% extends "tracker_app/base.html" %}
 {% block title %} Supervisor View {% endblock %}
 {% block body %}
+<script src="https://kit.fontawesome.com/702ae185c3.js" crossorigin="anonymous"></script>
 <div class="header">
     <h1 class="heading">Sign RBT Hours</h1>
     <select id="rbt-select">
         <option value="" disabled selected>Choose an RBT</option>
         {% for user in users %}
-        <option value="{{ user.first_name }} {{ user.last_name }}">{{ user.first_name }} {{ user.last_name }}</option>
+            <option value="{{ user.first_name }} {{ user.last_name }}">{{ user.first_name }} {{ user.last_name }}</option>
         {% endfor %}
     </select>
 </div>
+<div class="spacer-small"></div>
 <div class="table-container">
     <table class="hours-table">
         {% if caption %}
-            <caption class="super-view-table-captions">{{ current_rbt }}'s Daily Logs</caption>
+            <caption class="super-view-table-captions">
+                {{ current_rbt }}'s Daily Logs
+                {% if daily_logs %}
+                    <span id="daily-log-showorhide" class="chevrons">
+                        <i id="daily-chevron" class='fas fa-chevron-up'></i>
+                    </span>
+                {% endif %}
+            </caption>
         {% endif %}
         {% if daily_logs %}
             <thead>
                 <tr>
-                    <th id="hidden-heading"></th>
                     {% for heading in daily_headings %}
                         <th>{{ heading }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for row in daily_logs %}
-                <tr>
+                {% for id, row in daily_logs %}
+                <tr data-rowID="{{ id }}">
                     {% for data in row.values %}
-                        <td class="sign-data">{{ data }}</td>
+                        {% if data == "" %}
+                            <td class="sign-here">Click to Sign</td>
+                        {% else %}
+                            <td>{{ data }}</td>
+                        {% endif %}
                     {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
         {% else %}
-        {% if message %}
-        <thead class="tr-empty-table">
-            <tr>
-                <th class="th-empty-table">{{ message }}</th>
-            </tr>
-        </thead>
-        {% endif %}
+            {% if daily_message %}
+                <thead class="tr-empty-table">
+                    <tr>
+                        <th class="th-empty-table">{{ daily_message }}</th>
+                    </tr>
+                </thead>
+            {% endif %}
         {% endif %}
     </table>
 </div>
+<div class="spacer-small"></div>
+<div class="table-container">
+    <table class="hours-table">
+        {% if caption %}
+            <caption class="super-view-table-captions">
+                {{ current_rbt }}'s Monthly Logs
+                {% if monthly_logs %}
+                    <span id="monthly-log-showorhide" class="chevrons">
+                        <i id="monthly-chevron" class='fas fa-chevron-up'></i>
+                    </span>
+                {% endif %}
+            </caption>
+        {% endif %}
+        {% if monthly_logs %}
+            <thead>
+                <tr>
+                    {% for heading in monthly_headings %}
+                        <th>{{ heading }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for id, row in monthly_logs %}
+                <tr data-mRowID="{{ id }}">
+                    {% for data in row.values %}
+                        {% if data == "" %}
+                            <td class="sign-here">Click to Sign</td>
+                        {% else %}
+                            <td>{{ data }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        {% else %}
+            {% if monthly_message %}
+                <thead class="tr-empty-table">
+                    <tr>
+                        <th class="th-empty-table">{{ monthly_message }}</th>
+                    </tr>
+                </thead>
+            {% endif %}
+        {% endif %}
+    </table>
+</div>
+<div class="spacer-large"></div>
+<script>
+    // show/hide table
+    function toggle_visible(tableElement){
+        if (tableElement.style.display == "none"){
+            tableElement.style.display = "";
+        }
+        else {
+            tableElement.style.display = "none";
+        }
+    }
+    // change chevron direction
+    function toggle_chevron(chevron){
+        if (chevron.className == "fas fa-chevron-up"){
+            chevron.className = "fas fa-chevron-down";
+        }
+        else {
+            chevron.className = "fas fa-chevron-up";
+        }
+    }
+
+    // change table to daily or monthly based on user's selection
+    document.getElementById("rbt-select").addEventListener("change", () => {
+        const rbtName = document.getElementById("rbt-select").value.split(" ");
+        window.location = `http://127.0.0.1:8000/view-rbt/${rbtName[0]}%20${rbtName[1]}`;
+    });
+
+    // set event lister for chevrons if they exist
+    if (document.getElementById("daily-log-showorhide")) {
+
+        document.getElementById("daily-log-showorhide").addEventListener("click", (event) => {
+            const dailyTableBody = event.target.parentElement.parentElement.parentElement.children[2];
+            const chevron = document.getElementById("daily-chevron");
+            toggle_visible(dailyTableBody);
+            toggle_chevron(chevron);
+        });
+    }
+
+    if (document.getElementById("monthly-log-showorhide")) {
+        
+        document.getElementById("monthly-log-showorhide").addEventListener("click", (event) => {
+            const dailyTableBody = event.target.parentElement.parentElement.parentElement.children[2];
+            const chevron = document.getElementById("monthly-chevron");
+            toggle_visible(dailyTableBody);
+            toggle_chevron(chevron);
+        });
+    }
+</script>
 {% endblock %}
