@@ -112,10 +112,9 @@ def supervisor_index(request, rbt):
                 row["month"] = helper.convert_month(row["month"])
                 monthly_row_ids.append(row["id"])
                 del row["id"]
-            print(monthly_data)
-            print(monthly_row_ids)
+                
             zipped_monthly = zip(monthly_row_ids, monthly_data)
-            print(zipped_monthly)
+
             # check for empty querysets
             if not daily_data:
                 daily_message = "No Data :("
