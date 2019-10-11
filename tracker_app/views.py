@@ -60,8 +60,8 @@ def supervisor_index(request, rbt):
         if rbt == "no user":
             daily_log_headings = []
             monthly_log_headings = []
-            daily_data = False
-            monthly_data = False
+            zipped_daily = False
+            zipped_monthly = False
             caption_bool = False
 
         # attempt to lookup rbt by name provided
@@ -75,6 +75,7 @@ def supervisor_index(request, rbt):
                 return redirect(reverse("supervisor_index", args=["no user"]))
 
             # prepare table headings
+            caption_bool = True
             daily_log_headings = [
                 "DATE", "SESSION HOURS",
                 "OBSERVED HOURS", "SUPERVISOR",
@@ -101,26 +102,35 @@ def supervisor_index(request, rbt):
                     "signature", "signature_date"
                 )
 
-            # convert month integers to text
+            # seperate daily id values
+            daily_row_ids = helper.strip_ids(daily_data)
+            zipped_daily = zip(daily_row_ids, daily_data)
+
+            # convert month integers to text, seperate id values
+            monthly_row_ids = []
             for row in monthly_data:
                 row["month"] = helper.convert_month(row["month"])
-
+                monthly_row_ids.append(row["id"])
+                del row["id"]
+            print(monthly_data)
+            print(monthly_row_ids)
+            zipped_monthly = zip(monthly_row_ids, monthly_data)
+            print(zipped_monthly)
             # check for empty querysets
             if not daily_data:
                 daily_message = "No Data :("
-                daily_data = False
+                zipped_daily = None
 
             if not monthly_data:
                 monthly_message = "No Data :("
                 monthly_data = False
-
-            caption_bool = True
+                zipped_monthly = None
 
         context = {
             "monthly_headings": monthly_log_headings,
             "daily_headings": daily_log_headings,
-            "daily_logs": daily_data,
-            "monthly_logs": monthly_data,
+            "daily_logs": zipped_daily,
+            "monthly_logs": zipped_monthly,
             "daily_message": daily_message,
             "monthly_message": monthly_message,
             "current_rbt": firstname,
