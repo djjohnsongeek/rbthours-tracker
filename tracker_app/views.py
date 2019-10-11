@@ -36,7 +36,7 @@ def supervisor_index(request, rbt):
         "tracker_app.change_daily_log"
     ]
     
-    # render template if user is indeed a supervisor
+    # render template if user is a supervisor
     if request.user.has_perms(supervisor_perms):
         supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
 
@@ -50,22 +50,27 @@ def supervisor_index(request, rbt):
         # parse rbt name
         try:
             firstname, lastname = rbt.split(" ")
+        # if incorrect rbt arg, redirect to default value
         except ValueError:
             return redirect(reverse("supervisor_index", args=["no user"]))
 
         # check for default value
-        message = None
+        daily_message = None
+        monthly_message = None
         if rbt == "no user":
             daily_log_headings = []
             monthly_log_headings = []
             daily_data = False
+            monthly_data = False
             caption_bool = False
 
-        # attempt to lookup name
+        # attempt to lookup rbt by name provided
         else:
             # get selected RBT's data
             try:
-                user_id = User.objects.get(first_name=firstname, last_name=lastname).id
+                user_id = User.objects.get(
+                    first_name=firstname, last_name=lastname
+                ).id
             except User.DoesNotExist:
                 return redirect(reverse("supervisor_index", args=["no user"]))
 
@@ -83,26 +88,44 @@ def supervisor_index(request, rbt):
             ]
 
             # get daily log data
-            daily_data = models.Daily_log.objects.filter(user_id_id=user_id).values(
-                "id", "date", "session_hours", "observed_hours",
-                "supervisor", "signature", "signature_date"
-            )
+            daily_data = models.Daily_log.objects.filter(
+                user_id_id=user_id).values(
+                    "id", "date", "session_hours", "observed_hours",
+                    "supervisor", "signature", "signature_date"
+                )
 
-            caption_bool = True
-            # check for empty queryset
+            # get monthly log data
+            monthly_data = models.Monthly_log.objects.filter(
+                user_id_id=user_id).values(
+                    "id", "year", "month", "session_hours", "observed_hours",
+                    "signature", "signature_date"
+                )
+
+            # convert month integers to text
+            for row in monthly_data:
+                row["month"] = helper.convert_month(row["month"])
+
+            # check for empty querysets
             if not daily_data:
-                message = "No Data :("
+                daily_message = "No Data :("
                 daily_data = False
 
+            if not monthly_data:
+                monthly_message = "No Data :("
+                monthly_data = False
+
+            caption_bool = True
 
         context = {
             "monthly_headings": monthly_log_headings,
             "daily_headings": daily_log_headings,
+            "daily_logs": daily_data,
+            "monthly_logs": monthly_data,
+            "daily_message": daily_message,
+            "monthly_message": monthly_message,
+            "current_rbt": firstname,
             "supervisor": True,
             "users": rbts,
-            "daily_logs": daily_data,
-            "message": message,
-            "current_rbt": firstname + " " + lastname,
             "caption": caption_bool
         }
         return render(request, "tracker_app/supervisor-view.html", context)
@@ -110,6 +133,7 @@ def supervisor_index(request, rbt):
     # otherwise redirect to index
     return redirect(reverse("index"))
 def login_view(request):
+    # GET REQUEST
     if request.method == "GET":
         logout(request)
 
@@ -169,8 +193,8 @@ def login_view(request):
                 "tracker_app.change_daily_log"
             ]
 
-            # redirect to supervisor page if user is supervisor
-            if user.has_perms(supervisor_perms):
+            # redirect to supervisor page if user is supervisor (but not if superuser)
+            if not user.is_superuser and user.has_perms(supervisor_perms):
                 return redirect(reverse("supervisor_index", args=["no user"]))
 
             # otherwise render rbt page
