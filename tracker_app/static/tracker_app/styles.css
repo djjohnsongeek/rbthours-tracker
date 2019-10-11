@@ -2,10 +2,10 @@
 select{
     text-align-last: center;
     font-size: 3.5rem;
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
     color: white;
     font-family: 'Montserrat', sans-serif;
-    border: 1px solid rgb(55, 65, 65);
+    border: 1px solid #122425;
     cursor: pointer;
     border-radius: 3px;
 }
@@ -34,18 +34,19 @@ select::-ms-expand {
 #rbt-select{
     text-align-last: center;
     font-size: 1.5rem;
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
     color: white;
     font-family: 'Montserrat', sans-serif;
     padding: 1px;
     cursor: pointer;
     border-radius: 2px;
+    color: rgb(97, 97, 97);
 }
 
 #rbt-select:hover{
     border: 1px solid white;
     background-color: white;
-    color: rgb(55, 65, 65);
+    color: #122425;
 }
 /* BASE PAGE HEADERS */
 .heading{
@@ -56,6 +57,9 @@ select::-ms-expand {
     font-size: 2.5rem;
 }
 
+.spacer-large{
+    height: 250px;
+}
 .spacer-small{
     height: 50px;
 }
@@ -66,7 +70,8 @@ select::-ms-expand {
 html{
     font-size: 14px;
     font-family: 'Montserrat', sans-serif;
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
+    background-color: #122425;
     color: white;
 }
 
@@ -91,7 +96,7 @@ a{
 #download-link{
     font-size: 1rem;
     color: #1b998b;
-    background-color:rgb(55, 65, 65);
+    background-color:#122425;
     border: none;
     cursor: pointer;
 }
@@ -195,7 +200,7 @@ td, th {
     padding: 20px;
 }
 th {
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
     color: #4bc2b4;
     border: none;
 }
@@ -204,7 +209,7 @@ th {
     font-weight: bold;
 }
 #no{
-    color:rgb(255, 85, 85);
+    color:#d00000;
     font-weight: bold;
 
 }
@@ -220,7 +225,7 @@ th {
     color: white;
 }
 .th-empty-table{
-    background-color: red;
+    background-color: #d00000;
     color: white;
     border: 1px solid white;
 }
@@ -233,16 +238,38 @@ th {
     font-size: 3rem;
 }
 .delete-button:hover{
-    color: red;
+    color: #d00000;
     cursor: pointer;
 }
-#hidden-heading{
-    background-color: rgb(55, 65, 65);
+.hidden-heading{
+    background-color: #122425;
+}
+.chevrons {
+    font-size:32px;
+    color:white;
+}
+.chevrons:hover {
+    color: #4bc2b4;
+    cursor: pointer;
+}
+.no-display{
+    display: none;
+}
+.sign-here{
+    color: rgb(0, 240, 0);
+    color: #00c774;
+    padding: 4px;
+    font-size: 1.5rem;
+}
+.sign-here:hover{
+    color: #e9f3ef;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px #00c774;
 }
 /* SERVER MESSAGES */
 .error{
     color: white;
-    background-color: red;
+    background-color: #d00000;
     border-radius: 3px;
     width: 30%;
     font-size: 1.5rem;
@@ -283,7 +310,7 @@ th {
 .modal-content {
     font-family: 'Montserrat', sans-serif;
     background-color: rgb(95, 95, 95);
-    color: red;
+    color: #d00000;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid rgb(180, 180, 180);
@@ -333,6 +360,7 @@ th {
     color: black;
     font-weight: bold;
 }
+
 /* MOBILE (SMALL) */
 @media screen and (max-width: 1000px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
