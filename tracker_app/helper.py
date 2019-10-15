@@ -6,8 +6,10 @@ def convert_month(num:str):
     For example: 1 converts to "Jan"
     """
     try:
-        num = int(num)
+        num = abs(int(num))
     except ValueError:
+        raise ValueError
+    if num > 12:
         raise ValueError
     
     months = [
