@@ -3,7 +3,7 @@ from . import helper
 
 # Create your tests here
 
-# Test Modeles
+# Test Models
 # Test Views
 
 # Test Custom Helper Functions
@@ -37,8 +37,40 @@ class ConvertMonthTestCase(TestCase):
         self.assertEqual(helper.convert_month(2.3), "Febuary")
         self.assertEqual(helper.convert_month(2.9), "Febuary")
 
-    # class StripRowIdsFromListOfDict(TestCase):
-    #     def test_deletes_id_key_values
-    #     def test_handles_empty_list:
-    #     def test_handles_non_existent_key:
-    #     def test_returns_listOfint
+class StripRowIdsFromListOfDict(TestCase):
+    def test_deletes_id_key_values(self):
+        """ removes the id key value pairs from the given dictionary """
+
+        EXAMPLE_LOD = [
+            {"id": 1, "session_hours": 20, "obs_hours": 1},
+            {"id": 2, "session_hours": 52, "obs_hours": 3}
+        ]
+
+        RESULT_LOD = [
+            {"session_hours": 20, "obs_hours": 1},
+            {"session_hours": 52, "obs_hours": 3}
+        ]
+
+        helper.strip_ids(EXAMPLE_LOD)
+        self.assertEqual(RESULT_LOD, EXAMPLE_LOD)
+
+    def test_handles_empty_list(self):
+        """ returns empty list if given an empty list """
+        self.assertEqual(helper.strip_ids([]), [])
+
+    def test_handles_non_existent_key(self):
+        """ raises KeyError if id key is not present """
+        RESULT_LOD = [
+            {"session_hours": 20, "obs_hours": 1},
+            {"session_hours": 52, "obs_hours": 3}
+        ]
+        with self.assertRaises(KeyError):
+            helper.strip_ids(RESULT_LOD)
+
+    def test_returns_listOfInt(self):
+        """ returns a list of integers """
+        EXAMPLE_LOD = [
+            {"id": 1, "session_hours": 20, "obs_hours": 1},
+            {"id": 2, "session_hours": 52, "obs_hours": 3}
+        ]
+        self.assertEqual(helper.strip_ids(EXAMPLE_LOD), [1, 2])
