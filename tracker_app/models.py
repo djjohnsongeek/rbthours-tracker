@@ -4,7 +4,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 """-------------------------------------------------------------------------"""
 # Create your models here.
 class Daily_log(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, unique_for_date="date")
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, unique_for_date="date", related_name="daily_logs")
     date = models.DateField()
     session_hours = models.DecimalField(max_digits=4, decimal_places=2)
     observed_hours = models.DecimalField(max_digits=4, decimal_places=2)
@@ -21,7 +21,7 @@ class Daily_log(models.Model):
         ]
 
 class Monthly_log(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="monthly_logs")
     year = models.IntegerField(
         validators = [
             MaxValueValidator(5000),
