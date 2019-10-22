@@ -1,7 +1,8 @@
-
+from django.contrib.auth.models import User
 """-------------------------------------------------------------------------"""
 def convert_month(num:str):
     """ 
+    String or Integer or Float -> String
     Converts a numerical (string type) Month into its english equivlent
     For example: 1 converts to "Jan"
     """
@@ -29,3 +30,15 @@ def strip_ids(list_of_dict:list):
         del row["id"]
 
     return list_of_ids
+
+def is_member(group_name:str, user):
+    """
+    String User Obj-> Boolean
+    Given a Django group name and a Django user object,
+    produces true is the user is in the group otherwise returns false
+    """
+    try:
+        return user.groups.filter(name=group_name).exists()
+    except:
+        raise ValueError
+
