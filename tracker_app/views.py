@@ -37,7 +37,7 @@ def supervisor_index(request, rbt):
     ]
     
     # render template if user is a supervisor
-    if request.user.has_perms(supervisor_perms):
+    if helper.is_member("Program Supervisor", request.user):
         supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
 
         # get RBT names
@@ -47,7 +47,7 @@ def supervisor_index(request, rbt):
             is_superuser=True
         ).values("first_name", "last_name")
 
-        # parse rbt name
+        # parse rbt names
         try:
             firstname, lastname = rbt.split(" ")
         # if incorrect rbt arg, redirect to default value
@@ -195,15 +195,7 @@ def login_view(request):
             # login user
             login(request, user)
 
-            supervisor_perms = [
-                "tracker_app.view_daily_log",
-                "tracker_app.change_monthly_log",
-                "tracker_app.view_monthly_log",
-                "tracker_app.change_daily_log"
-            ]
-
-            # redirect to supervisor page if user is supervisor (but not if superuser)
-            if not user.is_superuser and user.has_perms(supervisor_perms):
+            if helper.is_member("Program Supervisor", user):
                 return redirect(reverse("supervisor_index", args=["no user"]))
 
             # otherwise render rbt page
