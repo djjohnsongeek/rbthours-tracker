@@ -4,7 +4,7 @@ from tracker_app.models import Daily_log, Monthly_log, User
 from django.contrib.auth.models import Group
 from . import helper
 """-------------------------------------------------------------------------"""
-# Test Models
+# ------------------------------ Test Models -------------------------------- #
 class ModelsTestCase(TestCase):
     def setUp(self):
         """ Setup required Data Base Rows """
@@ -118,12 +118,12 @@ class ModelsTestCase(TestCase):
             user.groups.filter(name="Program Supervisor").exists()
         )
 
-# ---- Test Views ---- #
+# ------------------------------- Test Views -------------------------------- #
 # daily log creates monthly log (if not monthly log)
 # daily log does not create monthly log (if monthly log exists)
 
 
-# ---- Test Custom Helper Functions ---- #
+# ---------------------- Test Custom Helper Functions ----------------------- #
 # Test convert_month()
 class ConvertMonthTestCase(TestCase):
     def test_month_is_correct(self):
@@ -155,8 +155,8 @@ class ConvertMonthTestCase(TestCase):
         self.assertEqual(helper.convert_month(2.3), "Febuary")
         self.assertEqual(helper.convert_month(2.9), "Febuary")
 
-# Test strip_ids
-class StripRowIdsFromListOfDict(TestCase):
+# Test strip_ids()
+class StripIdKeysFromListOfDict(TestCase):
 
     def test_deletes_id_key_values(self):
         """ removes the id key value pairs from the given dictionary """
@@ -194,8 +194,8 @@ class StripRowIdsFromListOfDict(TestCase):
         ]
         self.assertEqual(helper.strip_ids(EXAMPLE_LOD), [1, 2])
 
-# test is_member
-def IsMemberOfGroup(TestCase):
+# test is_member()
+def IsMember(TestCase):
     def setUp(self):
         # create user
         User.objects.create(
@@ -206,7 +206,11 @@ def IsMemberOfGroup(TestCase):
             last_name="Last", 
             username="firstlast"
         )
-        user = User.objects.get(pk=1)
+
+        # create Program Supervisor Group
+        group_name = "Program Supervisor"
+        new_group = Group(name=group_name)
+        new_group.save()
 
         # create Supervisor user
         User.objects.create(
@@ -219,21 +223,35 @@ def IsMemberOfGroup(TestCase):
         )
         supervisor = User.objects.get(pk=2)
 
-        # create Program Supervisor Group
-        group_name = "Program Supervisor"
-        new_group = Group(name=group_name)
-        new_group.save()
-
         # add Supervisor user to Group
         supervisor.groups.add(new_group)
 
-    def test_is_member(self):
-        user = User.objects.get(pk=1)
-        supervisor = User.objects.get(pk=2)
+        # create Superuser
+        User.objects.create(
+            id=3, 
+            password="hashedpassword3", 
+            is_superuser=True,
+            first_name="First3", 
+            last_name="Last3", 
+            username="firstlast3"
+        )
 
+    def test_is_member(self):
+        """ user in group supervisor validates as such """
+        supervisor = User.objects.get(pk=2)
         self.assertTrue(helper.is_member("Program Supervisor", supervisor))
+
+    def test_is_not_member(self):
+        """ regular user and superuser should not validate as a supervisor """
+        user = User.objects.get(pk=1)
+        superuser = User.objects.get(pk=3)
+        self.assertFalse(helper.is_member("Program Supervisor", superuser))
         self.assertFalse(helper.is_member("Program Supervisor", user))
         self.assertFalse(helper.is_member("Editor", user))
+
+    def test_invalid_args(self):
+        """ raises value error if arguments are incorrect """
+        user = User.objects.get(pk=1)
         with self.assertRaises(ValueError):
             helper.is_member("Program Supervisor", "User")
             helper.is_member(232, user)
