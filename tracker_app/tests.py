@@ -12,7 +12,7 @@ import datetime
 class ModelsTestCase(TestCase):
     def setUp(self):
         """ Setup required Data Base Rows """
-        helper.setup_test_database("all")
+        helper.setup_test_db("all")
 
     def test_unique_daily_date(self):
         """ test for unqiue daily dates """
@@ -63,7 +63,7 @@ class ModelsTestCase(TestCase):
 # ------------------------------- Test Views -------------------------------- #
 class ViewsTestCase(TestCase):
     def setUp(self):
-        helper.setup_test_database("all")
+        helper.setup_test_db("all")
 
     def test_index_view(self):
         # user is not logged in
@@ -89,7 +89,7 @@ class ViewsTestCase(TestCase):
         one_year = datetime.timedelta(days=365)
 
         # update user password (this is done here instead of inside
-        # helper.setup_test_database to increase test preformance)
+        # helper.setup_test_db to increase test preformance)
         user.set_password("hashedpassword")
         user.save()
         c = Client()
@@ -154,6 +154,7 @@ class ViewsTestCase(TestCase):
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
 # Test method_not_allowed() TODO
+# test setup_test_db()
 
 # Test convert_month()
 class ConvertMonthTestCase(TestCase):
@@ -228,7 +229,7 @@ class StripIdKeysFromListOfDict(TestCase):
 # test is_member()
 class IsMember(TestCase):
     def setUp(self):
-        helper.setup_test_database("users")
+        helper.setup_test_db("users")
 
     def test_is_member(self):
         """ user in group supervisor validates as such """

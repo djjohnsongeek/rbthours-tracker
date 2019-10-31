@@ -53,7 +53,7 @@ def is_member(group_name:str, user):
     except:
         raise ValueError
 
-def setup_test_database(extent:str):
+def setup_test_db(extent:str):
         """ 
         String -> Populates a test database with sample entries
         - Given string "all" populates database with user's and user logs
