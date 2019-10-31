@@ -20,6 +20,9 @@ from . import helper
 """-------------------------------------------------------------------------"""
 # Create your views here.
 def index(request):
+    if request.method != "GET":
+        return helper.method_not_allowed()
+
     if request.user.is_authenticated:
         return render(request, "tracker_app/index.html")
     else:
@@ -150,15 +153,17 @@ def login_view(request):
         response = render(request, "tracker_app/login.html")
         today = datetime.date.today()
         one_year = datetime.timedelta(days=365)
-        path = os.path.join(settings.BASE_DIR, "delete_date", "date.txt")
+        path = os.path.join(settings.BASE_DIR, "delete_date")
+        file_path = os.path.join(settings.BASE_DIR, "delete_date", "date.txt")
 
         # create file if missing
-        if not os.path.exists(path):
-            with open(path, "w") as f:
+        if not os.path.exists(file_path):
+            os.mkdir(path)
+            with open(file_path, "w") as f:
                 f.write(datetime.date.strftime(today + one_year, "%m/%d/%Y"))
 
         # get date
-        with open(path, "r") as f:
+        with open(file_path, "r") as f:
             string_date = f.read()
 
         # convert date from file to date obj
@@ -171,7 +176,7 @@ def login_view(request):
             models.Daily_log.objects.all().delete()        
             
             new_date = datetime.datetime.today() + one_year
-            with open(path, "w") as f:
+            with open(file_path, "w") as f:
                 f.write(datetime.date.strftime(new_date, "%m/%d/%Y"))
 
         elif time_till_delete.days <= 14:
@@ -185,7 +190,7 @@ def login_view(request):
         return render(request, "tracker_app/login.html")
 
     # POST REQUEST
-    else:
+    elif request.method == "POST":
         logout(request)
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
@@ -205,6 +210,9 @@ def login_view(request):
         else:
             messages.error(request, "Invalid Credentials")
             return redirect(reverse("login_view"))
+    else:
+        return helper.method_not_allowed()
+        
 
 
 def logout_view(request):
