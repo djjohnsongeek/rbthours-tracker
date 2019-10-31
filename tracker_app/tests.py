@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.conf import settings
 from django.db import IntegrityError
+from django.http import HttpResponse
 from django.contrib.messages import get_messages
 from tracker_app.models import Daily_log, Monthly_log, User
 from django.contrib.auth.models import Group
@@ -154,6 +155,13 @@ class ViewsTestCase(TestCase):
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
 # Test method_not_allowed() TODO
+class MethodNotAllowed(TestCase):
+    def test_method_not_allowed(self):
+        response = HttpResponse("Method Not Allowed")
+        response.status_code = 405
+        self.assertEqual(helper.method_not_allowed().status_code, response.status_code)
+        self.assertEqual(helper.method_not_allowed().content, response.content)
+        
 # test setup_test_db()
 
 # Test convert_month()
