@@ -1,76 +1,18 @@
-from django.test import TestCase
+from django.test import TestCase, Client
+from django.conf import settings
 from django.db import IntegrityError
+from django.contrib.messages import get_messages
 from tracker_app.models import Daily_log, Monthly_log, User
 from django.contrib.auth.models import Group
 from . import helper
-"""-------------------------------------------------------------------------"""
+
+import os
+import datetime
 # ------------------------------ Test Models -------------------------------- #
 class ModelsTestCase(TestCase):
     def setUp(self):
         """ Setup required Data Base Rows """
-        # create user
-        User.objects.create(
-            id=1, 
-            password="hashedpassword", 
-            is_superuser="False",
-            first_name="First", 
-            last_name="Last", 
-            username="firstlast"
-        )
-        user = User.objects.get(pk=1)
-
-        # create Supervisor user
-        User.objects.create(
-            id=2, 
-            password="hashedpassword2", 
-            is_superuser="False",
-            first_name="First2", 
-            last_name="Last2", 
-            username="firstlast2"
-        )
-        supervisor = User.objects.get(pk=2)
-
-        # create Program Supervisor Group
-        group_name = "Program Supervisor"
-        new_group = Group(name=group_name)
-        new_group.save()
-
-        # add Supervisor user to Group
-        supervisor.groups.add(new_group)
-
-        # create daily logs
-        Daily_log.objects.create(
-            user_id=user, 
-            date="2019-10-18", 
-            session_hours=5.00, 
-            observed_hours=0.23, 
-            supervisor="Kate"
-        )
-        Daily_log.objects.create(
-            user_id=user, 
-            date="2019-11-18", 
-            session_hours=2, 
-            observed_hours=0, 
-            supervisor="None"
-        )
-
-        # create monthly logs
-        Monthly_log.objects.create(
-            user_id=user, 
-            month=1, 
-            year=2019,
-            session_hours=120.00, 
-            observed_hours=7.54, 
-            mutable=False
-        )
-        Monthly_log.objects.create(
-            user_id=user, 
-            month=2, 
-            year=2019,
-            session_hours=5, 
-            observed_hours=.23, 
-            mutable=True
-        )
+        helper.setup_test_database("all")
 
     def test_unique_daily_date(self):
         """ test for unqiue daily dates """
@@ -119,11 +61,100 @@ class ModelsTestCase(TestCase):
         )
 
 # ------------------------------- Test Views -------------------------------- #
-# daily log creates monthly log (if not monthly log)
-# daily log does not create monthly log (if monthly log exists)
+class ViewsTestCase(TestCase):
+    def setUp(self):
+        helper.setup_test_database("all")
+
+    def test_index_view(self):
+        # user is not logged in
+        c = Client()
+        response = c.get("/")
+        
+        # redirects to login page
+        self.assertEqual(response.status_code, 302)
+
+        # user is logged in
+        user = User.objects.get(pk=1)
+        c.force_login(user, backend=None)
+        response = c.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        # test request method other then get
+        response = c.post("/", {"name": "Daniel"})
+        self.assertEqual(response.status_code, 405) # method no allowed
+
+    def test_login_view(self):
+        user = User.objects.get(pk=1)
+        today = datetime.date.today()
+        one_year = datetime.timedelta(days=365)
+
+        # update user password (this is done here instead of inside
+        # helper.setup_test_database to increase test preformance)
+        user.set_password("hashedpassword")
+        user.save()
+        c = Client()
+
+        # --- GET request tests ----
+        response = c.get("/login")
+
+        # delete data file exists
+        path = os.path.join(settings.BASE_DIR, "delete_date", "date.txt")
+        self.assertTrue(os.path.exists(path))
+
+        # get date
+        with open(path, "r") as f:
+            string_date = f.read()
+
+        # convert date from file to date obj
+        delete_date = datetime.datetime.strptime(string_date, "%m/%d/%Y").date()
+        time_till_delete = delete_date - today
+
+        # all logs are deleted if delete date is 'today'
+        if delete_date == today + one_year:
+            self.assertEqual(user.daily_logs.count(), 0)
+            self.assertEqual(user.monthly_logs.count(), 0)
+        # all logs intact otherwise
+        else:
+            self.assertEqual(user.daily_logs.count(), 2)
+            self.assertEqual(user.monthly_logs.count(), 2)
+
+        # login page is found
+        self.assertEqual(response.status_code, 200)
+
+        # ---- Post request tests ----
+
+        # successful login attempt
+        response = c.post("/login", {"username": "firstlast", "password": "hashedpassword"})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 0)
+        self.assertEqual(response.status_code, 302)
+
+        # failed login attemp
+        response = c.post("/login", {"username": "firstlast", "password": "fake"})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "Invalid Credentials")
+        
+        # ---- Other request tests ----
+        response = c.delete("/login", {"password": "password", "username": "username"})
+        self.assertEqual(response.status_code, 405)
+    
+    def test_supervisor_view(self):
+        pass
+        # TODO
+            
+# For each view:
+    # - check for the correct response code
+    # - check for correct content within the reponse context
+    # - check data base entires are correctly modified (not not modified)
+        # - daily log creates monthly log (if not monthly log)
+        # - daily log does not create monthly log (if monthly log exists)
 
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
+# Test method_not_allowed() TODO
+
 # Test convert_month()
 class ConvertMonthTestCase(TestCase):
     def test_month_is_correct(self):
@@ -195,46 +226,9 @@ class StripIdKeysFromListOfDict(TestCase):
         self.assertEqual(helper.strip_ids(EXAMPLE_LOD), [1, 2])
 
 # test is_member()
-def IsMember(TestCase):
+class IsMember(TestCase):
     def setUp(self):
-        # create user
-        User.objects.create(
-            id=1, 
-            password="hashedpassword", 
-            is_superuser="False",
-            first_name="First", 
-            last_name="Last", 
-            username="firstlast"
-        )
-
-        # create Program Supervisor Group
-        group_name = "Program Supervisor"
-        new_group = Group(name=group_name)
-        new_group.save()
-
-        # create Supervisor user
-        User.objects.create(
-            id=2, 
-            password="hashedpassword2", 
-            is_superuser="False",
-            first_name="First2", 
-            last_name="Last2", 
-            username="firstlast2"
-        )
-        supervisor = User.objects.get(pk=2)
-
-        # add Supervisor user to Group
-        supervisor.groups.add(new_group)
-
-        # create Superuser
-        User.objects.create(
-            id=3, 
-            password="hashedpassword3", 
-            is_superuser=True,
-            first_name="First3", 
-            last_name="Last3", 
-            username="firstlast3"
-        )
+        helper.setup_test_database("users")
 
     def test_is_member(self):
         """ user in group supervisor validates as such """
