@@ -1,5 +1,16 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
+from tracker_app.models import Daily_log, Monthly_log, User
+from django.http import HttpResponse
 """-------------------------------------------------------------------------"""
+def method_not_allowed():
+    """ 
+    No Arugments -> httpResponse
+    Returns a django httpResponse object with 304 status code
+    """
+    method_not_allowed = HttpResponse("Method Not Allowed")
+    method_not_allowed.status_code = 405
+    return method_not_allowed
+    
 def convert_month(num:str):
     """ 
     String or Integer or Float -> String
@@ -41,4 +52,92 @@ def is_member(group_name:str, user):
         return user.groups.filter(name=group_name).exists()
     except:
         raise ValueError
+
+def setup_test_database(extent:str):
+        """ 
+        String -> Populates a test database with sample entries
+        - Given string "all" populates database with user's and user logs
+        - Given string "users" populates database with users
+        - Otherwise raises ValueError
+        NOTE: Do not use the function outside of an instance of Django's TestCase
+        """
+
+        # ensure proper args
+        if extent not in {"users", "all"}:
+            raise ValueError
+
+        # create regular user
+        User.objects.create(
+            id=1, 
+            password="hashedpassword", 
+            is_superuser="False",
+            first_name="First", 
+            last_name="Last", 
+            username="firstlast"
+        )
+        user = User.objects.get(pk=1)
+
+        # create Supervisor user
+        User.objects.create(
+            id=2, 
+            password="hashedpassword2", 
+            is_superuser="False",
+            first_name="First2", 
+            last_name="Last2", 
+            username="firstlast2"
+        )
+        supervisor = User.objects.get(pk=2)
+
+        # create Program Supervisor Group
+        group_name = "Program Supervisor"
+        new_group = Group(name=group_name)
+        new_group.save()
+
+        # add Supervisor user to Group
+        supervisor.groups.add(new_group)
+        
+        # create Superuser
+        User.objects.create(
+            id=3, 
+            password="hashedpassword3", 
+            is_superuser=True,
+            first_name="First3", 
+            last_name="Last3", 
+            username="firstlast3"
+        )
+        if extent == "all":
+            # create daily logs
+            Daily_log.objects.create(
+                user_id=user, 
+                date="2019-10-18", 
+                session_hours=5.00, 
+                observed_hours=0.23, 
+                supervisor="Kate"
+            )
+            Daily_log.objects.create(
+                user_id=user, 
+                date="2019-11-18", 
+                session_hours=2, 
+                observed_hours=0, 
+                supervisor="None"
+            )
+
+            # create monthly logs
+            Monthly_log.objects.create(
+                user_id=user, 
+                month=1, 
+                year=2019,
+                session_hours=120.00, 
+                observed_hours=7.54, 
+                mutable=False
+            )
+            Monthly_log.objects.create(
+                user_id=user, 
+                month=2, 
+                year=2019,
+                session_hours=5, 
+                observed_hours=.23, 
+                mutable=True
+            )
+        
 
