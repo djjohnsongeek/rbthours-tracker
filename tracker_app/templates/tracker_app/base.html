@@ -5,8 +5,8 @@
             {% block title %} {% endblock %}
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
         <!--<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> Don't need bable for production-->
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
         <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto&display=swap" rel="stylesheet">
@@ -27,7 +27,6 @@
                 <a href="{% url 'logout_view' %}">Logout</a>
                 {% endif %}
             </div>
-            <!--<hr/>-->
         </nav>
         {% endif %}
         <div class="spacer-small"></div>
