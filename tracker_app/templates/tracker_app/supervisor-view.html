@@ -34,7 +34,7 @@
             </thead>
             <tbody>
                 {% for id, row in daily_logs %}
-                <tr data-rowID="{{ id }}">
+                <tr data-row-index-number="{{ id }}">
                     {% for data in row.values %}
                         {% if data == "" %}
                             <td class="sign-here">Click to Sign</td>
@@ -79,7 +79,7 @@
             </thead>
             <tbody>
                 {% for id, row in monthly_logs %}
-                <tr data-mRowID="{{ id }}">
+                <tr data-row-index-number="{{ id }}">
                     {% for data in row.values %}
                         {% if data == "" %}
                             <td class="sign-here">Click to Sign</td>
@@ -147,6 +147,34 @@
             toggle_visible(dailyTableBody);
             toggle_chevron(chevron);
         });
+    }
+
+    // setup events for 'Sign Here' text
+    signHereElements = document.getElementsByClassName("sign-here");
+    for(let element of signHereElements){
+        element.addEventListener("click", (event) => {
+            const rowIndex = event.target.parentElement.dataset.rowIndexNumber;
+            const supervName = Cookies.get("supervisor_name");
+            const url = "http://127.0.0.1:8000/log-data/sign";
+            const data = {
+                "log_type": "update",
+                "rowID": rowIndex,
+                "supervisor_name": supervName,
+                "csrfmiddlewaretoken": Cookies.get("csrftoken")
+            }
+            fetch(url, {
+                method: "PUT",
+                credentials: "include",
+                headers: {
+                  "X-CSRFToken": Cookies.get("csrftoken"),
+                  "Content-type": "application/json",
+                  "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify(data)
+            }).then(res => {
+                res.json();
+            })
+        })
     }
 </script>
 {% endblock %}
