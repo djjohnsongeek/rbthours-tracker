@@ -253,6 +253,7 @@ def register(request):
         new_user = User.objects.create_user(username, email, password)
         new_user.last_name = lastname
         new_user.first_name = firstname
+        new_user.save()
     except IntegrityError:
         messages.error(request, "Username already taken")
         return redirect(reverse("register"))
@@ -268,7 +269,7 @@ def register(request):
     os.mkdir(path)
 
     messages.success(request, "Account created!")
-    return redirect(reverse("login_view", args=["none"]))
+    return redirect(reverse("login_view"))
 
 @login_required
 def view_hours(request, table_type):
