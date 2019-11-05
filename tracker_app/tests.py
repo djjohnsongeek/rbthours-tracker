@@ -95,7 +95,7 @@ class ViewsTestCase(TestCase):
         user.save()
         c = Client()
 
-        # --- GET request tests ----
+        # --- GET request tests ---- #
         response = c.get("/login")
 
         # delete data file exists
@@ -122,8 +122,7 @@ class ViewsTestCase(TestCase):
         # login page is found
         self.assertEqual(response.status_code, 200)
 
-        # ---- Post request tests ----
-
+        # ---- Post request tests ---- #
         # successful login attempt
         response = c.post("/login", {"username": "firstlast", "password": "hashedpassword"})
         messages = list(get_messages(response.wsgi_request))
@@ -154,6 +153,7 @@ class ViewsTestCase(TestCase):
 
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
+# TODO Test json_httpResponse()
 # Test method_not_allowed()
 class MethodNotAllowed(TestCase):
     def test_method_not_allowed(self):
