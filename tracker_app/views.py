@@ -213,23 +213,28 @@ def login_view(request):
         return helper.method_not_allowed()
         
 
-
 def logout_view(request):
     logout(request)
     return redirect(reverse("login_view"))
 
-def register(request):
+def register(request, staff_type):
     if request.method == "GET":
         logout(request)
-        return render(request, "tracker_app/register.html")
-    
+        if staff_type == "supervisor":
+            return render(request,"tracker_app/register-supervisor.html")
+        else:
+            return render(request, "tracker_app/register.html")
+
     # POST REQUESTS
+    supervisor_cred = "ASD"
+
     username = request.POST.get("username", "")
     firstname = request.POST.get("firstname", "")
     lastname = request.POST.get("lastname", "")
     email = request.POST.get("email", "")
     password = request.POST.get("password", "")
     confirm_pw = request.POST.get("confirm_pw", "")
+    supervisor_auth = request.POST.get("supervisor_auth", "")
 
     # check for empty fields
     if "" in {username, firstname, lastname, email, password, confirm_pw}:
@@ -257,6 +262,11 @@ def register(request):
     except IntegrityError:
         messages.error(request, "Username already taken")
         return redirect(reverse("register"))
+
+    # make user a supervisor if eligible
+    if supervisor_auth == supervisor_cred:
+        super_group = Group.objects.get(name="Program Supervisor")
+        new_user.groups.add(super_group)
 
     # create user file path
     current_user = User.objects.get(username=username)
