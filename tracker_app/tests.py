@@ -154,7 +154,7 @@ class ViewsTestCase(TestCase):
 
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
-# Test method_not_allowed() TODO
+# Test method_not_allowed()
 class MethodNotAllowed(TestCase):
     def test_method_not_allowed(self):
         response = HttpResponse("Method Not Allowed")
@@ -162,8 +162,6 @@ class MethodNotAllowed(TestCase):
         self.assertEqual(helper.method_not_allowed().status_code, response.status_code)
         self.assertEqual(helper.method_not_allowed().content, response.content)
         
-# test setup_test_db()
-
 # Test convert_month()
 class ConvertMonthTestCase(TestCase):
     def test_month_is_correct(self):
