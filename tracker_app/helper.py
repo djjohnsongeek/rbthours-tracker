@@ -1,7 +1,22 @@
 from django.contrib.auth.models import Group
 from tracker_app.models import Daily_log, Monthly_log, User
 from django.http import HttpResponse
+import simplejson as json
 """-------------------------------------------------------------------------"""
+def json_httpResponse(status: str, code: int, message:str):
+    """
+    String, Integer, String -> HttpResponse
+    Returns a django httpResponse object that contains the given data (message
+    and status) json encoded. HTTP response code is also set to provided "code".
+    data and a status code
+    """
+    reponse = HttpResponse(json.dumps({
+        "status": status,
+        "message": message
+    }))
+    reponse.status_code = code
+    return reponse
+
 def method_not_allowed():
     """ 
     No Arugments -> httpResponse
@@ -139,5 +154,3 @@ def setup_test_db(extent:str):
                 observed_hours=.23, 
                 mutable=True
             )
-        
-
