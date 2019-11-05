@@ -29,121 +29,120 @@ def index(request):
         return redirect(reverse("login_view"))
 
 def supervisor_index(request, rbt):
+    # check that user is logged in
     if not request.user.is_authenticated:
         return redirect(reverse("login_view"))
-
-    supervisor_perms = [
-        "tracker_app.view_daily_log",
-        "tracker_app.change_monthly_log",
-        "tracker_app.view_monthly_log",
-        "tracker_app.change_daily_log"
-    ]
     
-    # render template if user is a supervisor
-    if helper.is_member("Program Supervisor", request.user):
-        supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
+    # check the user is a supervisor
+    if not helper.is_member("Program Supervisor", request.user):
+        return redirect(reverse("index"))
 
-        # get RBT names
-        rbts = User.objects.exclude(
-            groups=supervisor_grp_id
-        ).exclude(
-            is_superuser=True
-        ).values("first_name", "last_name")
+    # render supervisor template
+    default_view = redirect(reverse("supervisor_index", args=["no user"]))
+    supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
 
-        # parse rbt names
+    # get RBT names
+    rbts = User.objects.exclude(groups=supervisor_grp_id).exclude(
+        is_superuser=True
+    ).values("first_name", "last_name")
+
+    # parse rbt names
+    try:
+        firstname, lastname = rbt.split(" ")
+    except ValueError: # invalid rbt name argument, render default
+        return default_view
+
+    # prepare response context variables
+    daily_message = None
+    monthly_message = None
+
+    # check for default value (no user selected)
+    if rbt == "no user":
+        daily_log_headings = []
+        monthly_log_headings = []
+        zipped_daily = False
+        zipped_monthly = False
+        caption_bool = False
+
+    # lookup rbt's logs
+    else: 
         try:
-            firstname, lastname = rbt.split(" ")
-        # if incorrect rbt arg, redirect to default value
-        except ValueError:
-            return redirect(reverse("supervisor_index", args=["no user"]))
+            user_id = User.objects.get(
+                first_name=firstname,
+                last_name=lastname
+            ).id
+        except User.DoesNotExist: # redirect to default
+            return default_view
 
-        # check for default value
-        daily_message = None
-        monthly_message = None
-        if rbt == "no user":
-            daily_log_headings = []
-            monthly_log_headings = []
-            zipped_daily = False
-            zipped_monthly = False
-            caption_bool = False
+        # prepare table headings
+        caption_bool = True
+        daily_log_headings = [
+            "DATE", "SESSION HOURS",
+            "OBSERVED HOURS", "SUPERVISOR",
+            "SIGNATURE", "DATE SIGNED"
+        ]
+        monthly_log_headings = [
+            "YEAR", "MONTH",
+            "SESSION HOURS", 
+            "OBSERVED HOURS",
+            "SIGNATURE", "DATE SIGNED"
+        ]
 
-        # attempt to lookup rbt by name provided
-        else:
-            # get selected RBT's data
-            try:
-                user_id = User.objects.get(
-                    first_name=firstname, last_name=lastname
-                ).id
-            except User.DoesNotExist:
-                return redirect(reverse("supervisor_index", args=["no user"]))
+        # get daily log data
+        daily_data = models.Daily_log.objects.filter(
+            user_id_id=user_id).values(
+                "id", "date", "session_hours", "observed_hours",
+                "supervisor", "signature", "signature_date"
+            )
 
-            # prepare table headings
-            caption_bool = True
-            daily_log_headings = [
-                "DATE", "SESSION HOURS",
-                "OBSERVED HOURS", "SUPERVISOR",
-                "SIGNATURE", "DATE SIGNED"
-            ]
-            monthly_log_headings = [
-                "YEAR", "MONTH",
-                "SESSION HOURS", 
-                "OBSERVED HOURS",
-                "SIGNATURE", "DATE SIGNED"
-            ]
+        # get monthly log data
+        monthly_data = models.Monthly_log.objects.filter(
+            user_id_id=user_id).values(
+                "id", "year", "month", "session_hours", "observed_hours",
+                "signature", "signature_date"
+            )
 
-            # get daily log data
-            daily_data = models.Daily_log.objects.filter(
-                user_id_id=user_id).values(
-                    "id", "date", "session_hours", "observed_hours",
-                    "supervisor", "signature", "signature_date"
-                )
+        # seperate daily id values
+        daily_row_ids = helper.strip_ids(daily_data)
+        zipped_daily = zip(daily_row_ids, daily_data)
 
-            # get monthly log data
-            monthly_data = models.Monthly_log.objects.filter(
-                user_id_id=user_id).values(
-                    "id", "year", "month", "session_hours", "observed_hours",
-                    "signature", "signature_date"
-                )
+        # convert month integers to text, seperate id values
+        monthly_row_ids = []
+        for row in monthly_data:
+            row["month"] = helper.convert_month(row["month"])
+            monthly_row_ids.append(row["id"])
+            del row["id"]
+            
+        zipped_monthly = zip(monthly_row_ids, monthly_data)
 
-            # seperate daily id values
-            daily_row_ids = helper.strip_ids(daily_data)
-            zipped_daily = zip(daily_row_ids, daily_data)
+        # check for empty querysets
+        if not daily_data:
+            daily_message = "No Data :("
+            zipped_daily = None
+        if not monthly_data:
+            monthly_message = "No Data :("
+            monthly_data = False
+            zipped_monthly = None
 
-            # convert month integers to text, seperate id values
-            monthly_row_ids = []
-            for row in monthly_data:
-                row["month"] = helper.convert_month(row["month"])
-                monthly_row_ids.append(row["id"])
-                del row["id"]
-                
-            zipped_monthly = zip(monthly_row_ids, monthly_data)
+    context = {
+        "daily_headings": daily_log_headings,
+        "daily_logs": zipped_daily,
+        "daily_message": daily_message,
+        "monthly_logs": zipped_monthly,
+        "monthly_headings": monthly_log_headings,
+        "monthly_message": monthly_message,
+        "current_rbt": firstname,
+        "supervisor": True,
+        "users": rbts,
+        "caption": caption_bool
+    }
+    supervisor_page = render(request, "tracker_app/supervisor-view.html", context)
+    supervisor_page.set_cookie(
+        "supervisor_name", 
+        request.user.first_name + " " + request.user.last_name
+    )
+    return supervisor_page
 
-            # check for empty querysets
-            if not daily_data:
-                daily_message = "No Data :("
-                zipped_daily = None
-
-            if not monthly_data:
-                monthly_message = "No Data :("
-                monthly_data = False
-                zipped_monthly = None
-
-        context = {
-            "monthly_headings": monthly_log_headings,
-            "daily_headings": daily_log_headings,
-            "daily_logs": zipped_daily,
-            "monthly_logs": zipped_monthly,
-            "daily_message": daily_message,
-            "monthly_message": monthly_message,
-            "current_rbt": firstname,
-            "supervisor": True,
-            "users": rbts,
-            "caption": caption_bool
-        }
-        return render(request, "tracker_app/supervisor-view.html", context)
-
-    # otherwise redirect to index
-    return redirect(reverse("index"))
 def login_view(request):
     # GET REQUEST
     if request.method == "GET":
@@ -280,6 +279,7 @@ def view_hours(request, table_type):
         log = models.Monthly_log
     else:
         context = {
+            'userID': request.user.id,
             "headings": False,
             "data": False,
             "message": "Error: Incorrect URL Path :|",
@@ -306,6 +306,7 @@ def view_hours(request, table_type):
     # check for no data
     if not user_data.exists():
         context = {
+            'userID': request.user.id,
             "headings": False,
             "data": False,
             "message": "No Data Found :(",
@@ -333,6 +334,7 @@ def view_hours(request, table_type):
 
     # create context
     context = {
+        'userID': request.user.id,
         "headings": headings,
         "data": zipped_data,
         "message": "No Data Found :(",
@@ -343,18 +345,21 @@ def view_hours(request, table_type):
     return render(request, "tracker_app/view-hours.html", context)
 
 @login_required
-def log_data(request, log_type):
-    # get POST DATA, prepare initial variables for monthly
+def log_data(request, log_type): 
+    # Acquire POST data
     request_data = json.loads(request.body)
-    devisor = 1
-    data_set = {
-        request_data["date"], 
-        request_data["hours"],
-        request_data["obs_time"]
-    }
 
-    # customize required fields
-    if log_type == "day":
+    # Prepare initial variables for a monthly data
+    if log_type == "month":
+        devisor = 1
+        data_set = {
+            request_data["date"], 
+            request_data["hours"],
+            request_data["obs_time"]
+        }
+
+    # customize variables for a daily log if neccsary
+    elif log_type == "day":
         data_set = {
             request_data["date"],
             request_data["hours"],
@@ -362,6 +367,37 @@ def log_data(request, log_type):
             request_data["supervisor"]
         }
         devisor = 60
+
+    # -------------- Supervisor signs a RBT's log ------------ #
+    elif log_type == "sign":
+        # check that user is supervisor
+        if not helper.is_member("Program Supervisor", request.user):
+            return redirect(reverse("index"))
+
+        # sign the appropriate row
+        if request_data["table_type"] == "daily-table":
+            log = models.Daily_log
+        else:
+            log = models.Monthly_log
+
+        try:
+            update_log = log.objects.get(pk=int(request_data["rowID"]))
+        except:
+            return helper.json_httpResponse("Error", 400, "Bad Request")
+
+        update_log.signature = request_data["supervisor_name"]
+        update_log.signature_date = datetime.date.today()
+        update_log.save()
+        
+        # return http response
+        return helper.json_httpResponse("success", 200, "Data Logged")
+
+    # otherwuse URL is incorect
+    else:
+        return HttpResponse(json.dumps({
+            "status": "Error",
+            "message": "Invalid URL"
+        }))
        
     # check for empty fields
     if "" in data_set:
@@ -371,7 +407,7 @@ def log_data(request, log_type):
         }))
 
     
-    # regex modified from https://www.regextester.com/96683
+    # date regex modified from https://www.regextester.com/96683
     regex = re.compile(
         r"([12]\d{3})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])"
     )
@@ -488,7 +524,6 @@ def log_data(request, log_type):
             }))
 
         print("logged monthly data")
-
     # return success message
     return HttpResponse(json.dumps({
         "status": "success",
@@ -497,6 +532,7 @@ def log_data(request, log_type):
 
 @login_required
 def delete_data(request, data_type, primary_key):
+    # prepare error responses
     url_error = HttpResponse(
         json.dumps({
             "status": "error",
@@ -516,7 +552,7 @@ def delete_data(request, data_type, primary_key):
             "status": "error",
             "message": "Method not Allowed"
         }))
-
+    
     # check for valid url arguments
     if data_type == "daily":
         log_type = models.Daily_log
@@ -533,18 +569,24 @@ def delete_data(request, data_type, primary_key):
     except log_type.DoesNotExist:
         return nolog_error
 
+    # validate that user is only interacting with their own data
+    request_data = json.loads(request.body)
+    client_userid = int(request_data["user_id"])
+    row_userid = row_for_delete.user_id_id
+    if client_userid != row_userid:
+        return url_error
+
     # update monthly info if necssary
     if data_type == "daily":
         date = datetime.datetime.strftime(row_for_delete.date, "%Y/%m/%d/")
         date = date.split("/")
         year = int(date[0])
-        month = (int(date[1]))
+        month = int(date[1])
         obs_hours = row_for_delete.observed_hours
         session_hours = row_for_delete.session_hours
 
         try:
             monthly_log = models.Monthly_log.objects.get(user_id=request.user.id, month=month, year=year)
-
             if monthly_log.mutable:
                 monthly_log.observed_hours = monthly_log.observed_hours - obs_hours
                 monthly_log.session_hours = monthly_log.session_hours - session_hours
