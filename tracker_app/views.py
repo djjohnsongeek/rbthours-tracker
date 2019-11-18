@@ -220,10 +220,13 @@ def logout_view(request):
 def register(request, staff_type):
     if request.method == "GET":
         logout(request)
-        if staff_type == "supervisor":
-            return render(request,"tracker_app/register-supervisor.html")
-        else:
-            return render(request, "tracker_app/register.html")
+        if staff_type not in {"supervisor", "rbt"}:
+            return redirect(reverse("register", args=["rbt"]))
+
+        context = {
+            "staff_type": staff_type
+        }
+        return render(request, "tracker_app/register.html", context)
 
     # POST REQUESTS
     supervisor_cred = "ASD"
@@ -239,19 +242,25 @@ def register(request, staff_type):
     # check for empty fields
     if "" in {username, firstname, lastname, email, password, confirm_pw}:
         messages.error(request, "All fields are required")
-        return redirect(reverse("register"))
+        return redirect(reverse("register", args=[staff_type]))
 
-    # check for password that do not match
+    # check for passwords that do not match
     if password != confirm_pw:
         messages.error(request, "Passwords do not match")
-        return redirect(reverse("register"))
+        print(staff_type)
+        return redirect(reverse("register", args=[staff_type]))
     
     # check that email address is in a correct format
     # NOTE: Not a full proof regex
     regex = re.compile(r".+@.+\.[A-Za-z]{2,4}")
     if not regex.match(email):
         messages.error(request, "Invalid Email")
-        return redirect(reverse("register"))
+        return redirect(reverse("register", args=[staff_type]))
+
+    # check supervisor's credentials
+    if supervisor_auth and supervisor_auth != supervisor_cred:
+        messages.error(request, "Invalid Supervisor Credentials")
+        return redirect(reverse("register", args=[staff_type]))
 
     # create new user
     try:
@@ -261,12 +270,15 @@ def register(request, staff_type):
         new_user.save()
     except IntegrityError:
         messages.error(request, "Username already taken")
-        return redirect(reverse("register"))
+        return redirect(reverse("register", args=[staff_type]))
 
     # make user a supervisor if eligible
     if supervisor_auth == supervisor_cred:
         super_group = Group.objects.get(name="Program Supervisor")
         new_user.groups.add(super_group)
+        success_message = "Supervisor Account Created"
+    else:
+        success_message = "RBT Account Created"
 
     # create user file path
     current_user = User.objects.get(username=username)
@@ -278,7 +290,7 @@ def register(request, staff_type):
     path = os.path.join(file_path, str(current_user.pk))
     os.mkdir(path)
 
-    messages.success(request, "Account created!")
+    messages.success(request, success_message)
     return redirect(reverse("login_view"))
 
 @login_required
