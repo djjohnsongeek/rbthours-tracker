@@ -42,9 +42,11 @@
                     <td class="delete-data"><span class="delete-button">&#215;</span></td>
                     {% for value in row.values %}
                         {% if value == "Yes" %}
-                            <td id="yes">{{ value }}</td>
+                            <td class="yes">{{ value }}</td>
                         {% elif value == "No" %}
-                            <td id="no">{{ value }}</td>
+                            <td class="no">{{ value }}</td>
+                        {% elif value == "" or value == None or value == "empty" %}
+                            <td>---</td>
                         {% else %}
                             <td> {{ value }}</td>
                         {% endif %}

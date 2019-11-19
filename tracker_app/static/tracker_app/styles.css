@@ -215,11 +215,11 @@ th {
     color: #4bc2b4;
     border: none;
 }
-#yes{
+.yes{
     color: rgb(0, 240, 0);
     font-weight: bold;
 }
-#no{
+.no{
     color:#d00000;
     font-weight: bold;
 
