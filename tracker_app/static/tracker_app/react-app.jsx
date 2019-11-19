@@ -19,22 +19,16 @@ class SelectTitle extends React.Component {
         )
     }
 }
-class DefaultFields extends React.Component {
-    render () {
-        return(
-            <div>
-                <input id="input-date" type="date" placeholder="yyyy-mm-dd" name="date"/><br/>
-                <input placeholder="Hours Worked" type="text" name="session_hours"/><br/>
-            </div>
-        )
-    }
-}
+
 class DayForm extends React.Component {
     render() {
         return(
             <form className="form-logdata" data-formtype="day" id="daily">
-                <DefaultFields />
-                <input placeholder="Minutes Observed" type="text" name="obs_time"/><br/>
+                <input id="input-date" type="date" placeholder="yyyy-mm-dd" name="date"/><br/>
+                <input placeholder="Session Hours" type="text" name="session_hours" className="input-login-double"/>
+                <input placeholder="Session Minutes" type="test" name="session_min" className="input-login-double"/><br/>
+                <input placeholder="Hours Observed" type="test" name="obs_min"  className="input-login-double"/>
+                <input placeholder="Minutes Observed" type="text" name="obs_time"  className="input-login-double"/><br/>
                 <input placeholder="Supervisor" type="text" name="supervisor"/><br/>
                 <button onClick={this.props.postData} className="btn-submit-data">Submit</button>
             </form>
@@ -46,7 +40,8 @@ class MonthForm extends React.Component {
     render() {
         return (
             <form className="form-logdata" data-formtype="month" id="monthly">
-                <DefaultFields />
+                <input id="input-date" type="date" placeholder="yyyy-mm-dd" name="date"/><br/>
+                <input placeholder="Session Hours" type="text" name="session_hours"/><br/>
                 <input placeholder="Hours Observed" type="text" name="obs_time"/><br/>
                 <button onClick={this.props.postData} className="btn-submit-data">Submit</button>
             </form>
@@ -79,14 +74,30 @@ class App extends React.Component {
         for (let element of document.getElementsByTagName("input")){
             logData.push(element.value);
         }
+
+        // assume a monthly log
         const date = logData[0];
-        const hours = logData[1];
-        const obsTime = logData[2];
+        let sessionHours = logData[1];
+        let sessionMin = 0
+        let obsHours = logData[2];
+        let obsMin = 0
         let supervisor = "";
+        let factor = 1;
+
+        // update varible if the log is daily
         if (logType === "day"){
-            supervisor = logData[3];
+            sessionMin = logData[2];
+            obsHours = logData[3];
+            obsMin = logData[4];
+            supervisor = logData[5];
+            factor = 60
         }
 
+        // consolidate time data
+        const hours = Number(sessionHours) + (Number(sessionMin) / 60);
+        const obsTime = (Number(obsHours) * factor) + Number(obsMin);
+
+        console.log(hours, obsTime);
         // setup url and data for the POST request
         const url = `http://127.0.0.1:8000/log-data/${logType}`;
         const data = {

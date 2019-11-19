@@ -130,7 +130,7 @@ a:hover, #download-link:hover{
     width: 30%;
 }
 
-.input-login-name{
+.input-login-double{
     width: calc(15% - 8px);
 }
 
@@ -378,6 +378,10 @@ th {
         width: 50%;
     }
 
+    .input-login-double{
+        width: calc(25% - 8px);
+    }
+
     .table-container{
         width: 95%;
     }
@@ -396,6 +400,10 @@ th {
 @media screen and (max-width: 800px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 60%;
+    }
+
+    .input-login-double{
+        width: calc(30% - 8px);
     }
 }
 @media screen and (max-width: 580px){
@@ -416,11 +424,18 @@ th {
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 75%;
     }
+    .input-login-double{
+        width: calc(37.5% - 8px);
+    }
 }
 
 @media screen and (max-width: 451px) {
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 85%;
+    }
+
+    .input-login-double{
+        width: calc(42.5% - 8px);
     }
 
     html {
