@@ -372,7 +372,7 @@ th {
     font-weight: bold;
 }
 
-/* MOBILE (SMALL) */
+/* MOBILE Responsiveness */
 @media screen and (max-width: 1000px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 50%;
@@ -395,6 +395,12 @@ th {
     }
     .spacer-small{
         height: 20px;
+    }
+
+    a, .nav-devider {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 2rem;
     }
 }
 @media screen and (max-width: 800px){
@@ -429,7 +435,7 @@ th {
     }
 }
 
-@media screen and (max-width: 451px) {
+@media screen and (max-width: 475px) {
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 85%;
     }
@@ -441,12 +447,17 @@ th {
     html {
         font-size: 12px;
     }
-    .headin{
-        font-size: 3.5rem;
+    .heading{
+        font-size: 3rem;
     }
     #table-caption {
         font-size: 2.75rem;
     }
+
+    .super-view-table-captions, .chevrons {
+        font-size: 1.5rem;
+    }
+
     .subheading {
         font-size: 2rem;
     }
@@ -454,10 +465,29 @@ th {
     a, .nav-devider {
         margin-left: 3px;
         margin-right: 3px;
-        font-size: 1.25rem;
+        font-size: 1.75rem;
     }
     select{
         font-size: 2.5rem;
     }
+    input {
+        font-size: 1.25rem;
+    }
 
+    .hours-table td, th {
+        padding: 1px;
+        font-size: .5rem;
+    }
+
+}
+
+@media screen and (max-width: 350px) {
+    .heading {
+        font-size: 2.5rem;
+    }
+    a, .nav-devider {
+        margin-left: 3px;
+        margin-right: 3px;
+        font-size: 1.5rem;
+    }
 }
