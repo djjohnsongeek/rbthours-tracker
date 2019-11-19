@@ -13,25 +13,32 @@
     <div class="spacer-tiny"></div>
     <div>
         <select id="select-viewhours">
-                <option value="" disabled selected>Pick Time Frame</option>
-                <option value="daily">Daily</option>
-                <option value="monthly">Monthly</option>
+            <option value="" disabled selected>Pick Time Frame</option>
+            <option value="daily">Daily</option>
+            <option value="monthly">Monthly</option>
         </select><br/>
         {% if data %}
+<<<<<<< HEAD
         <form id="download-form" action="https://rbt-tracker.herokuapp.com/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
             <button id="download-link">Download</button>
         </form>
+=======
+            <form id="download-form" action="http://127.0.0.1:8000/download/{{request.user.id}}/{{table_type_arg}}" method="GET">
+                <button id="download-link">Download</button>
+            </form>
+>>>>>>> merge-prep
         {% endif %}
     </div>
 </div>
 <div class="table-container">
+    <span id="user_id" style="display: none;">{{ userID }}</span>
     <table class="hours-table">
         {% if data %}
             <thead>
                 <tr>
-                    <th id="hidden-heading"></th>
+                    <th class="hidden-heading"></th>
                     {% for heading in headings %}
-                    <th>{{ heading }}</th>
+                        <th>{{ heading }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -41,9 +48,11 @@
                     <td class="delete-data"><span class="delete-button">&#215;</span></td>
                     {% for value in row.values %}
                         {% if value == "Yes" %}
-                            <td id="yes">{{ value }}</td>
+                            <td class="yes">{{ value }}</td>
                         {% elif value == "No" %}
-                            <td id="no">{{ value }}</td>
+                            <td class="no">{{ value }}</td>
+                        {% elif value == "" or value == None or value == "empty" %}
+                            <td>---</td>
                         {% else %}
                             <td> {{ value }}</td>
                         {% endif %}
@@ -59,7 +68,7 @@
         </thead>
         {% endif %}
     </table>
-    </div>
-    {% load static %}
-    <script src="{% static 'tracker_app/view-data.js' %}" type="text/javascript"></script>
+</div>
+{% load static %}
+<script src="{% static 'tracker_app/view-data.js' %}" type="text/javascript"></script>
 {% endblock %}

@@ -77,40 +77,10 @@ function (_React$Component2) {
   return SelectTitle;
 }(React.Component);
 
-var DefaultFields =
-/*#__PURE__*/
-function (_React$Component3) {
-  _inherits(DefaultFields, _React$Component3);
-
-  function DefaultFields() {
-    _classCallCheck(this, DefaultFields);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(DefaultFields).apply(this, arguments));
-  }
-
-  _createClass(DefaultFields, [{
-    key: "render",
-    value: function render() {
-      return React.createElement("div", null, React.createElement("input", {
-        id: "input-date",
-        type: "date",
-        placeholder: "yyyy-mm-dd",
-        name: "date"
-      }), React.createElement("br", null), React.createElement("input", {
-        placeholder: "Hours Worked",
-        type: "text",
-        name: "session_hours"
-      }), React.createElement("br", null));
-    }
-  }]);
-
-  return DefaultFields;
-}(React.Component);
-
 var DayForm =
 /*#__PURE__*/
-function (_React$Component4) {
-  _inherits(DayForm, _React$Component4);
+function (_React$Component3) {
+  _inherits(DayForm, _React$Component3);
 
   function DayForm() {
     _classCallCheck(this, DayForm);
@@ -125,10 +95,31 @@ function (_React$Component4) {
         className: "form-logdata",
         "data-formtype": "day",
         id: "daily"
-      }, React.createElement(DefaultFields, null), React.createElement("input", {
+      }, React.createElement("input", {
+        id: "input-date",
+        type: "date",
+        placeholder: "yyyy-mm-dd",
+        name: "date"
+      }), React.createElement("br", null), React.createElement("input", {
+        placeholder: "Session Hours",
+        type: "text",
+        name: "session_hours",
+        className: "input-login-double"
+      }), React.createElement("input", {
+        placeholder: "Session Minutes",
+        type: "test",
+        name: "session_min",
+        className: "input-login-double"
+      }), React.createElement("br", null), React.createElement("input", {
+        placeholder: "Hours Observed",
+        type: "test",
+        name: "obs_min",
+        className: "input-login-double"
+      }), React.createElement("input", {
         placeholder: "Minutes Observed",
         type: "text",
-        name: "obs_time"
+        name: "obs_time",
+        className: "input-login-double"
       }), React.createElement("br", null), React.createElement("input", {
         placeholder: "Supervisor",
         type: "text",
@@ -145,8 +136,8 @@ function (_React$Component4) {
 
 var MonthForm =
 /*#__PURE__*/
-function (_React$Component5) {
-  _inherits(MonthForm, _React$Component5);
+function (_React$Component4) {
+  _inherits(MonthForm, _React$Component4);
 
   function MonthForm() {
     _classCallCheck(this, MonthForm);
@@ -161,7 +152,16 @@ function (_React$Component5) {
         className: "form-logdata",
         "data-formtype": "month",
         id: "monthly"
-      }, React.createElement(DefaultFields, null), React.createElement("input", {
+      }, React.createElement("input", {
+        id: "input-date",
+        type: "date",
+        placeholder: "yyyy-mm-dd",
+        name: "date"
+      }), React.createElement("br", null), React.createElement("input", {
+        placeholder: "Session Hours",
+        type: "text",
+        name: "session_hours"
+      }), React.createElement("br", null), React.createElement("input", {
         placeholder: "Hours Observed",
         type: "text",
         name: "obs_time"
@@ -177,8 +177,8 @@ function (_React$Component5) {
 
 var App =
 /*#__PURE__*/
-function (_React$Component6) {
-  _inherits(App, _React$Component6);
+function (_React$Component5) {
+  _inherits(App, _React$Component5);
 
   function App(props) {
     var _this;
@@ -203,7 +203,8 @@ function (_React$Component6) {
         for (var _iterator = document.getElementsByTagName("input")[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var element = _step.value;
           logData.push(element.value);
-        }
+        } // assume a monthly log
+
       } catch (err) {
         _didIteratorError = true;
         _iteratorError = err;
@@ -220,14 +221,25 @@ function (_React$Component6) {
       }
 
       var date = logData[0];
-      var hours = logData[1];
-      var obsTime = logData[2];
+      var sessionHours = logData[1];
+      var sessionMin = 0;
+      var obsHours = logData[2];
+      var obsMin = 0;
       var supervisor = "";
+      var factor = 1; // update varible if the log is daily
 
       if (logType === "day") {
-        supervisor = logData[3];
-      } // setup url and data for the POST request
+        sessionMin = logData[2];
+        obsHours = logData[3];
+        obsMin = logData[4];
+        supervisor = logData[5];
+        factor = 60;
+      } // consolidate time data
 
+
+      var hours = Number(sessionHours) + Number(sessionMin) / 60;
+      var obsTime = Number(obsHours) * factor + Number(obsMin);
+      console.log(hours, obsTime); // setup url and data for the POST request
 
       var url = "https://rbt-tracker.herokuapp.com/log-data/".concat(logType);
       var data = {

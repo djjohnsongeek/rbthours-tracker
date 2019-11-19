@@ -13,16 +13,32 @@
         {% endfor %}
     {% endif %}
     <div class="data-input">
-        <form action="{% url 'register' %}" method="POST">
+        {% if staff_type == "supervisor" %}
+            <form action="{% url 'register' 'supervisor' %}" method="POST">
+        {% else %}
+            <form action="{% url 'register' 'rbt' %}" method="POST">
+        {% endif %}
             {% csrf_token %}
+            {% if staff_type == "supervisor" %}
+                <input class="input-login" type="password" name="supervisor_auth" placeholder="Supervisor Credentials"><br/>
+            {% endif %}
             <input class="input-login" type="text" name="username" placeholder="Username"><br/>
+            <input class="input-login-double" type="text" name="firstname" placeholder="First Name"><!--
+            --><input class="input-login-double" type="text" name="lastname" placeholder="Last Name"><br/>
             <input class="input-login" type="email" name="email" placeholder="Email"><br/>
             <input class="input-login" type="password" name="password" placeholder="Password"><br/>
             <input class="input-login" type="password" name="confirm_pw" placeholder="Confirm Password"><br/>
             <button id="btn-login">Register</button>
         </form>
         <div class="spacer-tiny"></div>
-        <span>Already Registered?<span></span>
-        <a class="link-register" href="{% url 'login_view' %}">Login Here</a>
+        <span>Already Registered?</span>
+        <a class="link-register" href="{% url 'login_view' %}">Login Here</a><br/>
+        {% if staff_type == "supervisor" %}
+            <span>Are you a RBT?</span>
+            <a class="link-register" href="{% url 'register' 'rbt' %}">Register Here</a>
+        {% else %}
+            <span>Are you a Supervisor?</span>
+            <a class="link-register" href="{% url 'register' 'supervisor' %}">Register Here</a>
+        {% endif %}
     </div>
 {% endblock %}

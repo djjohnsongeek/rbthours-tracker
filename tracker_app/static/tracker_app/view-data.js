@@ -16,13 +16,14 @@
             const tableType = document.getElementById("table-caption").innerHTML.replace(" Logs", "").toLowerCase();
             const tr_element = event.target.parentElement.parentElement;
             const pk = tr_element.id;
+            const userId = document.getElementById("user_id").innerText;
 
             // setup url and data for the DELETE request
             const url = `https://rbt-tracker.herokuapp.com/delete-data/${tableType}/${pk}`;
             const data = {
+                "user_id": userId,
                 "csrfmiddlewaretoken": Cookies.get("csrftoken")
             };
-
             // send DELETE request to server
             if (tr_element.parentElement === document.getElementsByTagName("tbody")[0]){
                 fetch(url, {

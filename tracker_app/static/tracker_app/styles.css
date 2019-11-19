@@ -1,11 +1,16 @@
-/* SELET HEADINGS */
+/* WHOLE PAGE */
+body{
+    margin: 0px;
+}
+
+/* SELECT HEADINGS */
 select{
     text-align-last: center;
     font-size: 3.5rem;
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
     color: white;
     font-family: 'Montserrat', sans-serif;
-    border: 1px solid rgb(55, 65, 65);
+    border: 1px solid #122425;
     cursor: pointer;
     border-radius: 3px;
 }
@@ -30,6 +35,24 @@ select::-ms-expand {
 #select-viewhours:hover{
     color: white;
 }
+/* RBT select box */
+#rbt-select{
+    text-align-last: center;
+    font-size: 1.5rem;
+    background-color: #122425;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    padding: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    color: rgb(97, 97, 97);
+}
+
+#rbt-select:hover{
+    border: 1px solid white;
+    background-color: white;
+    color: #122425;
+}
 /* BASE PAGE HEADERS */
 .heading{
     font-size: 4rem;
@@ -39,6 +62,9 @@ select::-ms-expand {
     font-size: 2.5rem;
 }
 
+.spacer-large{
+    height: 250px;
+}
 .spacer-small{
     height: 50px;
 }
@@ -49,7 +75,8 @@ select::-ms-expand {
 html{
     font-size: 14px;
     font-family: 'Montserrat', sans-serif;
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
+    background-color: #122425;
     color: white;
 }
 
@@ -59,6 +86,12 @@ html{
 }
 
 /* NAV BAR */
+nav {
+    width: 100%;
+    height: 100%;
+    background-color: #0c1718;
+    padding: 5px 0px 5px 0px;
+}
 
 #flex-container{
     display: flex;
@@ -74,7 +107,7 @@ a{
 #download-link{
     font-size: 1rem;
     color: #1b998b;
-    background-color:rgb(55, 65, 65);
+    background-color:#122425;
     border: none;
     cursor: pointer;
 }
@@ -95,6 +128,10 @@ a:hover, #download-link:hover{
 /* LOGIN STYLE */
 .input-login{
     width: 30%;
+}
+
+.input-login-double{
+    width: calc(15% - 8px);
 }
 
 #btn-login{
@@ -174,16 +211,16 @@ td, th {
     padding: 20px;
 }
 th {
-    background-color: rgb(55, 65, 65);
+    background-color: #122425;
     color: #4bc2b4;
     border: none;
 }
-#yes{
+.yes{
     color: rgb(0, 240, 0);
     font-weight: bold;
 }
-#no{
-    color:rgb(255, 85, 85);
+.no{
+    color:#d00000;
     font-weight: bold;
 
 }
@@ -194,8 +231,12 @@ th {
     padding: 5px;
     border: none;
 }
+.super-view-table-captions{
+    font-size: 3rem;
+    color: white;
+}
 .th-empty-table{
-    background-color: red;
+    background-color: #d00000;
     color: white;
     border: 1px solid white;
 }
@@ -208,16 +249,38 @@ th {
     font-size: 3rem;
 }
 .delete-button:hover{
-    color: red;
+    color: #d00000;
     cursor: pointer;
 }
-#hidden-heading{
-    background-color: rgb(55, 65, 65);
+.hidden-heading{
+    background-color: #122425;
+}
+.chevrons {
+    font-size:32px;
+    color:white;
+}
+.chevrons:hover {
+    color: #4bc2b4;
+    cursor: pointer;
+}
+.no-display{
+    display: none;
+}
+.sign-here{
+    color: rgb(0, 240, 0);
+    color: #00c774;
+    padding: 4px;
+    font-size: 1.5rem;
+}
+.sign-here:hover{
+    color: #e9f3ef;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px #00c774;
 }
 /* SERVER MESSAGES */
 .error{
     color: white;
-    background-color: red;
+    background-color: #d00000;
     border-radius: 3px;
     width: 30%;
     font-size: 1.5rem;
@@ -258,7 +321,7 @@ th {
 .modal-content {
     font-family: 'Montserrat', sans-serif;
     background-color: rgb(95, 95, 95);
-    color: red;
+    color: #d00000;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid rgb(180, 180, 180);
@@ -308,10 +371,15 @@ th {
     color: black;
     font-weight: bold;
 }
-/* MOBILE (SMALL) */
+
+/* MOBILE Responsiveness */
 @media screen and (max-width: 1000px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 50%;
+    }
+
+    .input-login-double{
+        width: calc(25% - 8px);
     }
 
     .table-container{
@@ -328,10 +396,20 @@ th {
     .spacer-small{
         height: 20px;
     }
+
+    a, .nav-devider {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 2rem;
+    }
 }
 @media screen and (max-width: 800px){
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 60%;
+    }
+
+    .input-login-double{
+        width: calc(30% - 8px);
     }
 }
 @media screen and (max-width: 580px){
@@ -352,22 +430,34 @@ th {
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 75%;
     }
+    .input-login-double{
+        width: calc(37.5% - 8px);
+    }
 }
 
-@media screen and (max-width: 451px) {
+@media screen and (max-width: 475px) {
     .input-login, .error, .success, #btn-login, input, .btn-submit-data{
         width: 85%;
+    }
+
+    .input-login-double{
+        width: calc(42.5% - 8px);
     }
 
     html {
         font-size: 12px;
     }
-    .headin{
-        font-size: 3.5rem;
+    .heading{
+        font-size: 3rem;
     }
     #table-caption {
         font-size: 2.75rem;
     }
+
+    .super-view-table-captions, .chevrons {
+        font-size: 1.5rem;
+    }
+
     .subheading {
         font-size: 2rem;
     }
@@ -375,10 +465,27 @@ th {
     a, .nav-devider {
         margin-left: 3px;
         margin-right: 3px;
-        font-size: 1.25rem;
+        font-size: 1.75rem;
     }
     select{
         font-size: 2.5rem;
     }
+    input {
+        font-size: 1.25rem;
+    }
 
+    .hours-table td, th {
+        padding: 1px;
+        font-size: .5rem;
+    }
+
+}
+
+@media screen and (max-width: 350px) {
+    .heading {
+        font-size: 2.5rem;
+    }
+    a, .nav-devider {
+        font-size: 1.5rem;
+    }
 }
