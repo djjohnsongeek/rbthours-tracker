@@ -15,7 +15,7 @@ class Daily_log(models.Model):
     session_hours = models.DecimalField(max_digits=4, decimal_places=2)
     observed_hours = models.DecimalField(max_digits=4, decimal_places=2)
     supervisor = models.CharField(max_length=256)
-    signature = models.CharField(default="", max_length=256)
+    signature = models.CharField(default="empty", max_length=256)
     signature_date = models.DateField(null=True)
 
     class Meta:
@@ -47,7 +47,7 @@ class Monthly_log(models.Model):
     )
     session_hours = models.DecimalField(max_digits=5, decimal_places=2)
     observed_hours = models.DecimalField(max_digits=5, decimal_places=2)
-    signature = models.CharField(default="", max_length=256)
+    signature = models.CharField(default="empty", max_length=256)
     signature_date = models.DateField(null=True)
     mutable = models.BooleanField(default=False)
 
