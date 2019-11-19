@@ -682,7 +682,7 @@ def download(request, user_id, file_name):
     if os.path.exists(path):
         with open(path) as f:
             response = HttpResponse(f.read(), content_type="text/csv")
-            response["Content-Disposition"] = f"attachment/filename={file_name}"
+            response["Content-Disposition"] = f"attachment; filename={file_name}"
             return response
 
     messages.error(request, "No File Found")
