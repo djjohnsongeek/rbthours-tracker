@@ -446,7 +446,7 @@ def log_data(request, log_type):
     try:
         session_hours = float(request_data["hours"])
         obs_time = round((float(request_data["obs_time"]) / devisor), 2)
-    except ValueError:
+    except TypeError:
         return HttpResponse(json.dumps({
             "status": "error",
             "message": "Invalid time format"
