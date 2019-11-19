@@ -613,7 +613,12 @@ def delete_data(request, data_type, primary_key):
             if monthly_log.mutable:
                 monthly_log.observed_hours = monthly_log.observed_hours - obs_hours
                 monthly_log.session_hours = monthly_log.session_hours - session_hours
-                monthly_log.save()
+
+                if monthly_log.session_hours <= 0:
+                    monthly_log.delete()
+                else:
+                    monthly_log.save()
+                    
         except models.Monthly_log.DoesNotExist:
             pass
     
