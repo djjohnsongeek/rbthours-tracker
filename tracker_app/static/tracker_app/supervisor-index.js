@@ -20,7 +20,7 @@
     // change table to daily or monthly based on user's selection
     document.getElementById("rbt-select").addEventListener("change", () => {
         const rbtName = document.getElementById("rbt-select").value.split(" ");
-        window.location = `http://127.0.0.1:8000/view-rbt/${rbtName[0]}%20${rbtName[1]}`;
+        window.location = `https://rbt-tracker.herokuapp.com/view-rbt/${rbtName[0]}%20${rbtName[1]}`;
     });
 
     // set event lister for chevrons if they exist
@@ -53,7 +53,7 @@
             const tableType = rowElement.className;
             const rowIndex = rowElement.dataset.rowIndexNumber;
             const supervName = Cookies.get("supervisor_name");
-            const url = "http://127.0.0.1:8000/log-data/sign";
+            const url = "https://rbt-tracker.herokuapp.com/log-data/sign";
             const data = {
                 "table_type": tableType,
                 "rowID": rowIndex,
