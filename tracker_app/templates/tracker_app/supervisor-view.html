@@ -36,8 +36,10 @@
                 {% for id, row in daily_logs %}
                 <tr class="daily-table" data-row-index-number="{{ id }}">
                     {% for data in row.values %}
-                        {% if data == "" %}
+                        {% if data == "empty" %}
                             <td class="sign-here">Click to Sign</td>
+                        {% elif data == None or data == "" %}
+                            <td>---</td>
                         {% else %}
                             <td>{{ data }}</td>
                         {% endif %}
@@ -81,8 +83,10 @@
                 {% for id, row in monthly_logs %}
                 <tr class="monthly-table" data-row-index-number="{{ id }}">
                     {% for data in row.values %}
-                        {% if data == "" %}
+                        {% if data == "empty" %}
                             <td class="sign-here">Click to Sign</td>
+                        {% elif data == None or data == "" %}
+                            <td>---</td>
                         {% else %}
                             <td>{{ data }}</td>
                         {% endif %}
