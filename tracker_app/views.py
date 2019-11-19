@@ -372,23 +372,11 @@ def log_data(request, log_type):
     # Acquire POST data
     request_data = json.loads(request.body)
 
-    # Prepare initial variables for a monthly data
+    # Prepare initial variables
+    signature = "empty"
     if log_type == "month":
         devisor = 1
-        data_set = {
-            request_data["date"], 
-            request_data["hours"],
-            request_data["obs_time"]
-        }
-
-    # customize variables for a daily log if neccsary
     elif log_type == "day":
-        data_set = {
-            request_data["date"],
-            request_data["hours"],
-            request_data["obs_time"],
-            request_data["supervisor"]
-        }
         devisor = 60
 
     # -------------- Supervisor signs a RBT's log ------------ #
@@ -415,20 +403,12 @@ def log_data(request, log_type):
         # return http response
         return helper.json_httpResponse("success", 200, "Data Logged")
 
-    # otherwuse URL is incorect
+    # otherwise URL is incorrect
     else:
         return HttpResponse(json.dumps({
             "status": "Error",
             "message": "Invalid URL"
         }))
-       
-    # check for empty fields
-    if "" in data_set:
-        return HttpResponse(json.dumps({
-            "status": "error",
-            "message": "All fields are required"
-        }))
-
     
     # date regex modified from https://www.regextester.com/96683
     regex = re.compile(
@@ -452,12 +432,31 @@ def log_data(request, log_type):
             "message": "Invalid time format"
         }))
 
+    # check for zero session hours
+    if session_hours <= 0:
+        return HttpResponse(json.dumps({
+            "status": "error",
+            "message": "Session hours cannot be 0"
+        }))
+
     # check ensure observation time is less then session hours 
     if session_hours < obs_time:
         return HttpResponse(json.dumps({
             "status": "error",
             "message": "Observation time too long"
         }))
+
+    # check for supervisor name
+    if obs_time > 0 and log_type == "day":
+        if request_data["supervisor"] == "":
+            return HttpResponse(json.dumps({
+                "status": "error",
+                "message": "Supervisor's name required"
+            }))
+    
+    # check for 0 observationtime
+    if obs_time <= 0:
+        signature = "NOT REQUIRED"
 
     # ----------- Log User Data in Daily Table --------- #
     if log_type == "day":
@@ -467,7 +466,8 @@ def log_data(request, log_type):
             date=request_data["date"],
             session_hours=session_hours,
             observed_hours=obs_time,
-            supervisor=request_data["supervisor"]
+            supervisor=request_data["supervisor"],
+            signature=signature
         )
 
         try:
@@ -618,7 +618,7 @@ def delete_data(request, data_type, primary_key):
                     monthly_log.delete()
                 else:
                     monthly_log.save()
-                    
+
         except models.Monthly_log.DoesNotExist:
             pass
     
