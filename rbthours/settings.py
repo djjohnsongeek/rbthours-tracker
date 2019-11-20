@@ -76,10 +76,21 @@ WSGI_APPLICATION = 'rbthours.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dq8oi8nuefd4r',
+        'USER': 'pxzmmlwrafjifp',
+        'PASSWORD': '019696dfeb1d943f136638c82e08523a2a46951c6b303b01a68a15759e85d23a',
+        'HOST': 'ec2-107-20-167-241.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
