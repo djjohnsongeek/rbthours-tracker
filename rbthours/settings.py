@@ -24,8 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
+DEBUG = True
 ALLOWED_HOSTS = ['rbt-tracker.herokuapp.com']
 
 
@@ -76,23 +75,25 @@ WSGI_APPLICATION = 'rbthours.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dq8oi8nuefd4r',
-        'USER': 'pxzmmlwrafjifp',
-        'PASSWORD': '019696dfeb1d943f136638c82e08523a2a46951c6b303b01a68a15759e85d23a',
-        'HOST': 'ec2-107-20-167-241.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# when interacting with the database using django commands (migrate, etc...) manual settings are required
+# when heroku interacts with the database the settings at the bottom of the file work
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'dq8oi8nuefd4r',
+#         'USER': 'pxzmmlwrafjifp',
+#         'PASSWORD': '019696dfeb1d943f136638c82e08523a2a46951c6b303b01a68a15759e85d23a',
+#         'HOST': 'ec2-107-20-167-241.compute-1.amazonaws.com',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
