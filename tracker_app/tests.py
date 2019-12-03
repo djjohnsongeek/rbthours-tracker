@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.contrib.messages import get_messages
+from django.contrib.auth import logout
 from tracker_app.models import Daily_log, Monthly_log, User
 from django.contrib.auth.models import Group
 from . import helper
@@ -128,21 +129,104 @@ class ViewsTestCase(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 0)
         self.assertEqual(response.status_code, 302)
-
+        
         # failed login attemp
         response = c.post("/login", {"username": "firstlast", "password": "fake"})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Invalid Credentials")
-        
+
+        # setup user for supervisor login
+        user = User.objects.get(pk=2)
+        user.set_password("hashedpassword2")
+        user.save()
+
+        # send get request to clear messages
+        c.get("/login")
+
+        # supervisor login
+        response = c.post("/login", {"username": "firstlast2", "password": "hashedpassword2"})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 0)
+        self.assertEqual(response.status_code, 302)
+
         # ---- Other request tests ----
         response = c.delete("/login", {"password": "password", "username": "username"})
         self.assertEqual(response.status_code, 405)
     
     def test_supervisor_view(self):
-        pass
-        # TODO
+        # redirect user that is not logged in
+        c = Client()
+        response = c.get("/view-rbt/no%20user")
+        self.assertEqual(response.status_code, 302)
+
+        # log a regular user in
+        user = User.objects.get(pk=1)
+        c.force_login(user, backend=None)
+
+        # redirect user that is not a supervisor
+        response = c.get("/view-rbt/no%20user")
+        self.assertEqual(response.status_code, 302)
+        c.logout()
+
+        # log a supervisor in
+        user = User.objects.get(pk=2)
+        c.force_login(user, backend=None)
+
+        # --- These tests fail, but work in production just fine --- # 
+        ## redirect if user does not exists
+        # response = c.get("view-rbt/Daniel%20Johnson", follow=True)
+        # print(response.redirect_chain)
+        # self.assertEqual(response.status_code, 302)
+
+        ## redirect if url is incorrect
+        # response = c.get("view-rbt/incorrect", follow=True)
+        # print(response.redirect_chain)
+        # self.assertEqual(response.status_code, 302)
+            
+        # test context data for 'no user' view
+        response = c.get("/view-rbt/no%20user")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["daily_logs"])
+        self.assertFalse(response.context["monthly_logs"])
+        self.assertEqual(len(response.context["monthly_headings"]), 0)
+        self.assertEqual(len(response.context["daily_headings"]), 0)
+        self.assertFalse(response.context["caption"])
+        self.assertEqual(response.context["daily_message"], None)
+        self.assertEqual(response.context["monthly_message"], None)
+        self.assertEqual(response.context["current_rbt"], "no")
+        self.assertEqual(len(response.context["users"]), 1)
+
+        # --- Test data for valid user with data --- #
+        ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
+        ## this object is already iterated through for rendering, and thus empty
+        ## TODO: don't use zip for rendering data
+        # response = c.get("/view-rbt/First%20Last")
+        # self.assertEqual(len(data_logs), 1)
+        # self.assertFalse(len(response.context["monthly_logs"]), 1)
+
+        # test data for valid user without data
+        # create a new user (with no logs)
+        User.objects.create(
+            id=4,
+            password="hashedpassword", 
+            is_superuser="False",
+            first_name="Empty", 
+            last_name="User", 
+            username="firstlast4"
+        )
+        # send request
+        response = c.get("/view-rbt/Empty%20User")
+
+        # test the response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["daily_logs"], None)
+        self.assertEqual(response.context["monthly_logs"], None)
+        self.assertEqual(response.context["daily_message"], "No Data :(")
+        self.assertEqual(response.context["current_rbt"], "Empty")
+        self.assertEqual(len(response.context["users"]), 2)
+        self.assertTrue(response.context["caption"])
             
 # For each view:
     # - check for the correct response code

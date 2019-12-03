@@ -17,6 +17,7 @@ import re
 import datetime
 
 from . import helper
+# NOTE: use assertTemplateUsed, assertRedirects
 """-------------------------------------------------------------------------"""
 # Create your views here.
 def index(request):
@@ -45,8 +46,8 @@ def supervisor_index(request, rbt):
     rbts = User.objects.exclude(groups=supervisor_grp_id).exclude(
         is_superuser=True
     ).values("first_name", "last_name")
-
-    # parse rbt names
+    
+    # parse url name
     try:
         firstname, lastname = rbt.split(" ")
     except ValueError: # invalid rbt name argument, render default
@@ -124,6 +125,7 @@ def supervisor_index(request, rbt):
             monthly_data = False
             zipped_monthly = None
 
+    # build template varibles
     context = {
         "daily_headings": daily_log_headings,
         "daily_logs": zipped_daily,
@@ -141,6 +143,7 @@ def supervisor_index(request, rbt):
         "supervisor_name", 
         request.user.first_name + " " + request.user.last_name
     )
+
     return supervisor_page
 
 def login_view(request):
