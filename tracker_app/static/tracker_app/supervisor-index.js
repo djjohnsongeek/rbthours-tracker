@@ -1,3 +1,4 @@
+    
     // show/hide table
     function toggle_visible(tableElement){
         if (tableElement.style.display == "none"){
@@ -19,7 +20,7 @@
 
     // change table to daily or monthly based on user's selection
     document.getElementById("rbt-select").addEventListener("change", () => {
-        const rbtUsername = document.getElementById("rbt-select").value
+        const rbtUsername = document.getElementById("rbt-select").value;
         window.location = `https://rbt-tracker.herokuapp.com/view-rbt/${rbtUsername}`;
     });
 
