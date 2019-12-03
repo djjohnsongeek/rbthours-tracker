@@ -45,13 +45,7 @@ def supervisor_index(request, rbt):
     # get RBT names
     rbts = User.objects.exclude(groups=supervisor_grp_id).exclude(
         is_superuser=True
-    ).values("first_name", "last_name")
-    
-    # parse url name
-    try:
-        firstname, lastname = rbt.split(" ")
-    except ValueError: # invalid rbt name argument, render default
-        return default_view
+    ).values("username", "first_name", "last_name")
 
     # prepare response context variables
     daily_message = None
@@ -64,15 +58,14 @@ def supervisor_index(request, rbt):
         zipped_daily = False
         zipped_monthly = False
         caption_bool = False
+        rbt_name = "Default"
 
-    # lookup rbt's logs
-    else: 
+    else:
+        # lookup rbt's logs
         try:
-            user_id = User.objects.get(
-                first_name=firstname,
-                last_name=lastname
-            ).id
-        except User.DoesNotExist: # redirect to default
+            rbt_info = User.objects.get(username=rbt)
+        # validate user exists
+        except User.DoesNotExist:
             return default_view
 
         # prepare table headings
@@ -91,14 +84,14 @@ def supervisor_index(request, rbt):
 
         # get daily log data
         daily_data = models.Daily_log.objects.filter(
-            user_id_id=user_id).values(
+            user_id_id=rbt_info.id).values(
                 "id", "date", "session_hours", "observed_hours",
                 "supervisor", "signature", "signature_date"
             )
 
         # get monthly log data
         monthly_data = models.Monthly_log.objects.filter(
-            user_id_id=user_id).values(
+            user_id_id=rbt_info.id).values(
                 "id", "year", "month", "session_hours", "observed_hours",
                 "signature", "signature_date"
             )
@@ -115,6 +108,7 @@ def supervisor_index(request, rbt):
             del row["id"]
             
         zipped_monthly = zip(monthly_row_ids, monthly_data)
+        rbt_name = rbt_info.first_name
 
         # check for empty querysets
         if not daily_data:
@@ -135,7 +129,7 @@ def supervisor_index(request, rbt):
         "monthly_logs": zipped_monthly,
         "monthly_headings": monthly_log_headings,
         "monthly_message": monthly_message,
-        "current_rbt": firstname,
+        "current_rbt": rbt_name,
         "supervisor": True,
         "users": rbts,
         "caption": caption_bool

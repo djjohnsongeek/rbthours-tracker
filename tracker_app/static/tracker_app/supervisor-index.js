@@ -19,8 +19,8 @@
 
     // change table to daily or monthly based on user's selection
     document.getElementById("rbt-select").addEventListener("change", () => {
-        const rbtName = document.getElementById("rbt-select").value.split(" ");
-        window.location = `http://127.0.0.1:8000/view-rbt/${rbtName[0]}%20${rbtName[1]}`;
+        const rbtUsername = document.getElementById("rbt-select").value;
+        window.location = `http://127.0.0.1:8000/view-rbt/${rbtUsername}`;
     });
 
     // set event lister for chevrons if they exist
