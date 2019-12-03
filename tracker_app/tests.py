@@ -187,7 +187,7 @@ class ViewsTestCase(TestCase):
             
         # --- test context data for 'no user' view --- #
         # send the request
-        response = c.get("/view-rbt/no%20user")
+        response = c.get("/view-rbt/default")
 
         # validate the response
         self.assertEqual(response.status_code, 200)
@@ -198,12 +198,12 @@ class ViewsTestCase(TestCase):
         self.assertFalse(response.context["caption"])
         self.assertEqual(response.context["daily_message"], None)
         self.assertEqual(response.context["monthly_message"], None)
-        self.assertEqual(response.context["current_rbt"], "no")
+        self.assertEqual(response.context["current_rbt"], "default")
         self.assertEqual(len(response.context["users"]), 1)
 
         # --- Test data for valid user with data --- #
         # send the request
-        response = c.get("/view-rbt/First%20Last")
+        response = c.get("/view-rbt/firstlast")
         # validate the response
             ## validate user's log data
             ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
@@ -235,7 +235,7 @@ class ViewsTestCase(TestCase):
             username="firstlast4"
         )
         # send request
-        response = c.get("/view-rbt/Empty%20User")
+        response = c.get("/view-rbt/firstlast4")
 
         # test the response
         self.assertEqual(response.status_code, 200)

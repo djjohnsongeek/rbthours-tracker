@@ -41,7 +41,7 @@ def supervisor_index(request, rbt):
         return redirect(reverse("index"))
 
     # render supervisor template
-    default_view = redirect(reverse("supervisor_index", args=["no user"]))
+    default_view = redirect(reverse("supervisor_index", args=["default"]))
     supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
 
     # get RBT names
@@ -54,13 +54,13 @@ def supervisor_index(request, rbt):
     monthly_message = None
 
     # check for default value (no user selected)
-    if rbt == "no user":
+    if rbt == "default":
         daily_log_headings = []
         monthly_log_headings = []
         zipped_daily = False
         zipped_monthly = False
         caption_bool = False
-        rbt_name = "Default"
+        rbt_name = "default"
 
     else:
         # lookup rbt's logs
@@ -643,7 +643,7 @@ def download(request, user_id, file_name):
     # redirect supervisors
     if helper.is_member("Program Supervisor", request.user):
         return redirect(reverse("supervisor_index", args=["default"]))
-        
+
     if int(user_id) != request.user.id:
         raise PermissionDenied
         
