@@ -124,7 +124,7 @@ def supervisor_index(request, rbt):
         "monthly_logs": zipped_monthly,
         "monthly_headings": monthly_log_headings,
         "monthly_message": monthly_message,
-        "current_rbt": rbt_info.first_name,
+        "current_rbt": rbt_info["first_name"],
         "supervisor": True,
         "users": rbts,
         "caption": caption_bool
