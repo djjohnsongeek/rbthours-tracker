@@ -38,26 +38,20 @@ def supervisor_index(request, rbt):
         return redirect(reverse("index"))
 
     # render supervisor template
-    default_view = redirect(reverse("supervisor_index", args=["no user"]))
+    default_view = redirect(reverse("supervisor_index", args=["default"]))
     supervisor_grp_id = Group.objects.get(name="Program Supervisor").id
 
-    # get RBT names
+    # get RBT info
     rbts = User.objects.exclude(groups=supervisor_grp_id).exclude(
         is_superuser=True
-    ).values("first_name", "last_name")
-
-    # parse rbt names
-    try:
-        firstname, lastname = rbt.split(" ")
-    except ValueError: # invalid rbt name argument, render default
-        return default_view
+    ).values("first_name", "last_name", "username")
 
     # prepare response context variables
     daily_message = None
     monthly_message = None
 
     # check for default value (no user selected)
-    if rbt == "no user":
+    if rbt == "default":
         daily_log_headings = []
         monthly_log_headings = []
         zipped_daily = False
@@ -68,11 +62,10 @@ def supervisor_index(request, rbt):
     else: 
         try:
             user_id = User.objects.get(
-                first_name=firstname,
-                last_name=lastname
+                username=rbt
             ).id
-        except User.DoesNotExist: # redirect to default
-            return default_view
+        except User.DoesNotExist:
+            return default_view # redirect to default
 
         # prepare table headings
         caption_bool = True
@@ -131,7 +124,7 @@ def supervisor_index(request, rbt):
         "monthly_logs": zipped_monthly,
         "monthly_headings": monthly_log_headings,
         "monthly_message": monthly_message,
-        "current_rbt": firstname,
+        "current_rbt": rbt,
         "supervisor": True,
         "users": rbts,
         "caption": caption_bool
