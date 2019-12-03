@@ -57,15 +57,17 @@ def supervisor_index(request, rbt):
         zipped_daily = False
         zipped_monthly = False
         caption_bool = False
+        rbt_info = {"first_name": "default"}
 
-    # lookup rbt's logs
-    else: 
+    else:
+        # lookup rbt's logs
         try:
             rbt_info = User.objects.get(
                 username=rbt
             ).values("id", "first_name")
+        # validate user exists
         except User.DoesNotExist:
-            return default_view # redirect to default
+            return default_view 
 
         # prepare table headings
         caption_bool = True
