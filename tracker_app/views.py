@@ -120,10 +120,12 @@ def supervisor_index(request, rbt):
         if not daily_data:
             daily_message = "No Data :("
             zipped_daily = None
+            daily_log_headings = []
         if not monthly_data:
             monthly_message = "No Data :("
             monthly_data = False
             zipped_monthly = None
+            monthly_log_headings = []
 
     # build template varibles
     context = {

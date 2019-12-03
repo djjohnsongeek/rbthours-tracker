@@ -175,15 +175,15 @@ class ViewsTestCase(TestCase):
         c.force_login(user, backend=None)
 
         # --- These tests fail, but work in production just fine --- # 
-        ## redirect if user does not exists
-        # response = c.get("view-rbt/Daniel%20Johnson", follow=True)
-        # print(response.redirect_chain)
-        # self.assertEqual(response.status_code, 302)
+            ## redirect if user does not exists
+            # response = c.get("view-rbt/Daniel%20Johnson", follow=True)
+            # print(response.redirect_chain)
+            # self.assertEqual(response.status_code, 302)
 
-        ## redirect if url is incorrect
-        # response = c.get("view-rbt/incorrect", follow=True)
-        # print(response.redirect_chain)
-        # self.assertEqual(response.status_code, 302)
+            ## redirect if url is incorrect
+            # response = c.get("view-rbt/incorrect", follow=True)
+            # print(response.redirect_chain)
+            # self.assertEqual(response.status_code, 302)
             
         # test context data for 'no user' view
         response = c.get("/view-rbt/no%20user")
@@ -199,12 +199,14 @@ class ViewsTestCase(TestCase):
         self.assertEqual(len(response.context["users"]), 1)
 
         # --- Test data for valid user with data --- #
-        ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
-        ## this object is already iterated through for rendering, and thus empty
-        ## TODO: don't use zip for rendering data
-        # response = c.get("/view-rbt/First%20Last")
-        # self.assertEqual(len(data_logs), 1)
-        # self.assertFalse(len(response.context["monthly_logs"]), 1)
+            ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
+            ## this object is already iterated through for rendering, and thus empty
+            ## TODO: don't use zip for rendering data
+            # response = c.get("/view-rbt/First%20Last")
+            # self.assertEqual(len(data_logs), 1)
+            # self.assertFalse(len(response.context["monthly_logs"]), 1)
+            # TODO test other items
+            
 
         # test data for valid user without data
         # create a new user (with no logs)
@@ -224,6 +226,9 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context["daily_logs"], None)
         self.assertEqual(response.context["monthly_logs"], None)
         self.assertEqual(response.context["daily_message"], "No Data :(")
+        self.assertEqual(response.context["monthly_message"], "No Data :(")
+        self.assertEqual(len(response.context["daily_headings"]), 0)
+        self.assertEqual(len(response.context["monthly_headings"]), 0)
         self.assertEqual(response.context["current_rbt"], "Empty")
         self.assertEqual(len(response.context["users"]), 2)
         self.assertTrue(response.context["caption"])
