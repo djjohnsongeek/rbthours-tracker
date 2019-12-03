@@ -20,14 +20,16 @@ from . import helper
 # NOTE: use assertTemplateUsed, assertRedirects
 """-------------------------------------------------------------------------"""
 # Create your views here.
+@login_required
 def index(request):
     if request.method != "GET":
         return helper.method_not_allowed()
 
-    if request.user.is_authenticated:
-        return render(request, "tracker_app/index.html")
+    # redirect supervisors
+    if helper.is_member("Program Supervisor", request.user):
+        return redirect(reverse("supervisor_index", args=["default"]))
     else:
-        return redirect(reverse("login_view"))
+        return render(request, "tracker_app/index.html")
 
 def supervisor_index(request, rbt):
     # check that user is logged in
@@ -294,6 +296,10 @@ def register(request, staff_type):
 
 @login_required
 def view_hours(request, table_type):
+    # redirect supervisors
+    if helper.is_member("Program Supervisor", request.user):
+        return redirect(reverse("supervisor_index", args=["default"]))
+
     # Prepare proper Models
     if table_type == "daily":
         log = models.Daily_log
@@ -554,6 +560,10 @@ def log_data(request, log_type):
 
 @login_required
 def delete_data(request, data_type, primary_key):
+    # redirect supervisors
+    if helper.is_member("Program Supervisor", request.user):
+        return redirect(reverse("supervisor_index", args=["default"]))
+
     # prepare error responses
     url_error = HttpResponse(
         json.dumps({
@@ -630,6 +640,10 @@ def delete_data(request, data_type, primary_key):
 
 @login_required
 def download(request, user_id, file_name):
+    # redirect supervisors
+    if helper.is_member("Program Supervisor", request.user):
+        return redirect(reverse("supervisor_index", args=["default"]))
+        
     if int(user_id) != request.user.id:
         raise PermissionDenied
         
