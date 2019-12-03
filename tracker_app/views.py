@@ -57,7 +57,7 @@ def supervisor_index(request, rbt):
         zipped_daily = False
         zipped_monthly = False
         caption_bool = False
-        rbt_info = {"first_name": "default", "id": None}
+        rbt_name = {"first_name": "default", "id": None}
 
     else:
         # lookup rbt's logs
@@ -94,7 +94,7 @@ def supervisor_index(request, rbt):
                 "id", "year", "month", "session_hours", "observed_hours",
                 "signature", "signature_date"
             )
-
+        
         # seperate daily id values
         daily_row_ids = helper.strip_ids(daily_data)
         zipped_daily = zip(daily_row_ids, daily_data)
@@ -107,7 +107,8 @@ def supervisor_index(request, rbt):
             del row["id"]
             
         zipped_monthly = zip(monthly_row_ids, monthly_data)
-
+        rbt_name = rbt_info.first_name
+        
         # check for empty querysets
         if not daily_data:
             daily_message = "No Data :("
@@ -124,7 +125,7 @@ def supervisor_index(request, rbt):
         "monthly_logs": zipped_monthly,
         "monthly_headings": monthly_log_headings,
         "monthly_message": monthly_message,
-        "current_rbt": rbt_info["first_name"],
+        "current_rbt": rbt_name,
         "supervisor": True,
         "users": rbts,
         "caption": caption_bool
