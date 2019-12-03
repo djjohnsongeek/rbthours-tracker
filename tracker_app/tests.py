@@ -185,8 +185,11 @@ class ViewsTestCase(TestCase):
             # print(response.redirect_chain)
             # self.assertEqual(response.status_code, 302)
             
-        # test context data for 'no user' view
+        # --- test context data for 'no user' view --- #
+        # send the request
         response = c.get("/view-rbt/no%20user")
+
+        # validate the response
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["daily_logs"])
         self.assertFalse(response.context["monthly_logs"])
@@ -199,17 +202,30 @@ class ViewsTestCase(TestCase):
         self.assertEqual(len(response.context["users"]), 1)
 
         # --- Test data for valid user with data --- #
+        # send the request
+        response = c.get("/view-rbt/First%20Last")
+        # validate the response
+            ## validate user's log data
             ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
             ## this object is already iterated through for rendering, and thus empty
             ## TODO: don't use zip for rendering data
-            # response = c.get("/view-rbt/First%20Last")
+            
+            # data_logs = response.context["daily_logs"]
             # self.assertEqual(len(data_logs), 1)
             # self.assertFalse(len(response.context["monthly_logs"]), 1)
-            # TODO test other items
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["daily_headings"]), 6)
+        self.assertEqual(len(response.context["monthly_headings"]), 6)
+        self.assertTrue(response.context["caption"])
+        self.assertEqual(response.context["current_rbt"], "First")
+        self.assertEqual(len(response.context["users"]), 1)
+        self.assertEqual(response.context["daily_message"], None)
+        self.assertEqual(response.context["monthly_message"], None)
             
 
-        # test data for valid user without data
-        # create a new user (with no logs)
+        # --- test valid user that has not logged data -_- #
+        # create a new user (with no logs) 
         User.objects.create(
             id=4,
             password="hashedpassword", 
