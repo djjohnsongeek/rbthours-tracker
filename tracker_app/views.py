@@ -61,9 +61,9 @@ def supervisor_index(request, rbt):
     # lookup rbt's logs
     else: 
         try:
-            user_id = User.objects.get(
+            rbt_info = User.objects.get(
                 username=rbt
-            ).id
+            ).values("id", "first_name")
         except User.DoesNotExist:
             return default_view # redirect to default
 
@@ -83,14 +83,14 @@ def supervisor_index(request, rbt):
 
         # get daily log data
         daily_data = models.Daily_log.objects.filter(
-            user_id_id=user_id).values(
+            user_id_id=rbt_info.id).values(
                 "id", "date", "session_hours", "observed_hours",
                 "supervisor", "signature", "signature_date"
             )
 
         # get monthly log data
         monthly_data = models.Monthly_log.objects.filter(
-            user_id_id=user_id).values(
+            user_id_id=rbt_info.id).values(
                 "id", "year", "month", "session_hours", "observed_hours",
                 "signature", "signature_date"
             )
@@ -124,7 +124,7 @@ def supervisor_index(request, rbt):
         "monthly_logs": zipped_monthly,
         "monthly_headings": monthly_log_headings,
         "monthly_message": monthly_message,
-        "current_rbt": rbt,
+        "current_rbt": rbt_info.first_name,
         "supervisor": True,
         "users": rbts,
         "caption": caption_bool
