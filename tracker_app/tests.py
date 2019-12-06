@@ -270,10 +270,98 @@ class ViewsTestCase(TestCase):
 
     def test_register_view(self):
         # --- GET Requests --- #
-        # check for correct URL (rbt, supervisor)
+        c = Client()
 
-        # --- POST Requests
-        pass
+        # check that URL is properly formed
+        response = c.get("/register/staff")
+        self.assertEqual(response.status_code, 302)
+
+        response = c.get("/register/rbt")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["staff_type"], "rbt")
+
+        response = c.get("/register/supervisor")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["staff_type"], "supervisor")     
+
+        # --- POST Requests --- #
+
+        # check that all fields are required
+        response = c.post("/register/rbt", {
+            "username": "daniel.johnson",
+            "firstname": "",
+            "lastname": "Johnson",
+            "email": "danieleejohnson@gmail.com",
+            "password": "daniel",
+            "confirm_pw": "daniel",
+        })
+        messages = list(get_messages(response.wsgi_request))
+
+        # test response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].message, "All fields are required")
+
+        # check for error that passwords do not match
+        response = c.post("/register/rbt", {
+            "username": "daniel.johnson",
+            "firstname": "Daniel",
+            "lastname": "Johnson",
+            "email": "danieleejohnson@gmail.com",
+            "password": "dal", 
+            "confirm_pw": "daniel",
+        })
+        messages = list(get_messages(response.wsgi_request))
+
+        # test response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[1].message, "Passwords do not match")
+        self.assertEqual(messages[0].message, "All fields are required")
+
+        # check for invalid email
+        response = c.post("/register/rbt", {
+            "username": "daniel.johnson",
+            "firstname": "Daniel",
+            "lastname": "Johnson",
+            "email": "danieleejohnson",
+            "password": "daniel", 
+            "confirm_pw": "daniel",
+        })
+
+        messages = list(get_messages(response.wsgi_request))
+
+        # test response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 3)
+        self.assertEqual(messages[2].message, "Invalid Email")
+        self.assertEqual(messages[1].message, "Passwords do not match")
+
+        # check error on duplicate username
+
+        # check creation of a supervisor from the rbt path
+        response = c.post("/register/rbt", {
+            "username": "daniel.johnson",
+            "firstname": "Daniel",
+            "lastname": "Johnson",
+            "email": "danieleejohnson@gmail.com",
+            "password": "daniel", 
+            "confirm_pw": "daniel",
+        })
+        messages = list(get_messages(response.wsgi_request))
+
+        # test response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].message, "RBT Account Created")
+        self.assertEqual(User.objects.get(id=4).username, "daniel.johnson")
+
+        # test creation of a supervisor from the supervisor path
+        
+        # check that new rbt is created successfully
+        # check that new supervisor is created successfully
+         # check that new user is indeed a supervisor
+
 
 # For each view:
     # - check for the correct response code
