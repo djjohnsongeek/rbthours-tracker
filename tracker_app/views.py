@@ -247,7 +247,6 @@ def register(request, staff_type):
     # check for passwords that do not match
     if password != confirm_pw:
         messages.error(request, "Passwords do not match")
-        print(staff_type)
         return redirect(reverse("register", args=[staff_type]))
     
     # check that email address is in a correct format
