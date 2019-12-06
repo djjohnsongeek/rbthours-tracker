@@ -212,8 +212,7 @@ def login_view(request):
             return redirect(reverse("login_view"))
     else:
         return helper.method_not_allowed()
-        
-
+    
 def logout_view(request):
     logout(request)
     return redirect(reverse("login_view"))
