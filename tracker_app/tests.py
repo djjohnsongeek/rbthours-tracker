@@ -204,7 +204,7 @@ class ViewsTestCase(TestCase):
         # --- Test data for valid user with data --- #
         # send the request
         response = c.get("/view-rbt/firstlast")
-        # validate the response
+        # validate the response data
             ## validate user's log data
             ## NOTE: this is not currently possible since data is sent as an iterable object (zip)
             ## this object is already iterated through for rendering, and thus empty
@@ -224,7 +224,7 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context["monthly_message"], None)
             
 
-        # --- test valid user that has not logged data -_- #
+        # --- test valid user that has not logged data --- #
         # create a new user (with no logs) 
         User.objects.create(
             id=4,
@@ -248,7 +248,33 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context["current_rbt"], "Empty")
         self.assertEqual(len(response.context["users"]), 2)
         self.assertTrue(response.context["caption"])
-            
+
+    def test_logout_view(self):
+        c = Client()
+        
+        # log user in
+        user = User.objects.get(pk=1)
+        c.force_login(user, backend=None)
+
+        # verify user is logged in
+        response = c.get("/")
+        self.assertEqual(response.status_code, 200)
+
+        # log user out
+        response = c.get("/logout")
+        self.assertEqual(response.status_code, 302)
+
+        # verify user is logged out
+        response = c.get("/")
+        self.assertEqual(response.status_code, 302)
+
+    def test_register_view(self):
+        # --- GET Requests --- #
+        # check for correct URL (rbt, supervisor)
+
+        # --- POST Requests
+        pass
+
 # For each view:
     # - check for the correct response code
     # - check for correct content within the reponse context
