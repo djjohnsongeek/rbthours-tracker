@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.contrib.auth.models import User, Group
 from . import models
 from django.http import HttpResponse
@@ -263,10 +263,11 @@ def register(request, staff_type):
 
     # create new user
     try:
-        new_user = User.objects.create_user(username, email, password)
-        new_user.last_name = lastname
-        new_user.first_name = firstname
-        new_user.save()
+        with transaction.atomic():
+            new_user = User.objects.create_user(username, email, password)
+            new_user.last_name = lastname
+            new_user.first_name = firstname
+            new_user.save()
     except IntegrityError:
         messages.error(request, "Username already taken")
         return redirect(reverse("register", args=[staff_type]))
@@ -279,15 +280,22 @@ def register(request, staff_type):
     else:
         success_message = "RBT Account Created"
 
-    # create user file path
-    current_user = User.objects.get(username=username)
-    file_path = os.path.join(settings.BASE_DIR, "userlog_files")
-    try:
-        os.mkdir(file_path)
-    except FileExistsError:
-        pass
-    path = os.path.join(file_path, str(current_user.pk))
-    os.mkdir(path)
+        # create user file path
+        current_user = User.objects.get(username=username)
+        file_path = os.path.join(settings.BASE_DIR, "userlog_files")
+
+        # create base path if it does not exist
+        try:
+            os.mkdir(file_path)
+        except FileExistsError:
+            pass
+
+        # create user path if it does not exist
+        path = os.path.join(file_path, str(current_user.pk))
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            pass
 
     messages.success(request, success_message)
     return redirect(reverse("login_view"))
