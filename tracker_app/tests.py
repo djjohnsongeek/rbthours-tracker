@@ -295,12 +295,16 @@ class ViewsTestCase(TestCase):
             "password": "daniel",
             "confirm_pw": "daniel",
         })
-        messages = list(get_messages(response.wsgi_request))
+        # check that user was not created
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="daniel.johnson")
 
         # test response
+        messages = list(get_messages(response.wsgi_request))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].message, "All fields are required")
+
 
         # check for error that passwords do not match
         response = c.post("/register/rbt", {
@@ -311,13 +315,15 @@ class ViewsTestCase(TestCase):
             "password": "dal", 
             "confirm_pw": "daniel",
         })
-        messages = list(get_messages(response.wsgi_request))
+        # check that user was not created
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="daniel.johnson")
 
         # test response
+        messages = list(get_messages(response.wsgi_request))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(messages), 2)
         self.assertEqual(messages[1].message, "Passwords do not match")
-        self.assertEqual(messages[0].message, "All fields are required")
 
         # check for invalid email
         response = c.post("/register/rbt", {
@@ -328,18 +334,36 @@ class ViewsTestCase(TestCase):
             "password": "daniel", 
             "confirm_pw": "daniel",
         })
-
-        messages = list(get_messages(response.wsgi_request))
+        # check that user was not created
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="daniel.johnson")
 
         # test response
+        messages = list(get_messages(response.wsgi_request))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(messages), 3)
         self.assertEqual(messages[2].message, "Invalid Email")
-        self.assertEqual(messages[1].message, "Passwords do not match")
 
         # check error on duplicate username
+        response = c.post("/register/rbt", {
+            "username": "firstlast",
+            "firstname": "Daniel",
+            "lastname": "Johnson",
+            "email": "danieleejohnson@gmail.com",
+            "password": "daniel", 
+            "confirm_pw": "daniel",
+        })
+        # check that user was not created
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="daniel.johnson")
 
-        # check creation of a supervisor from the rbt path
+        # test the response 
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 4)
+        self.assertEqual(messages[3].message, "Username already taken")
+
+        # check creation of an rbt
         response = c.post("/register/rbt", {
             "username": "daniel.johnson",
             "firstname": "Daniel",
@@ -348,20 +372,70 @@ class ViewsTestCase(TestCase):
             "password": "daniel", 
             "confirm_pw": "daniel",
         })
-        messages = list(get_messages(response.wsgi_request))
+        # check that user WAS created
+        self.assertTrue(User.objects.get(username="daniel.johnson"))
+
+        # check that user's file was created
+        file_path = os.path.join(settings.BASE_DIR, "userlog_files", "4")
+        self.assertTrue(os.path.exists(file_path))
 
         # test response
+        messages = list(get_messages(response.wsgi_request))
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(messages), 4)
-        self.assertEqual(messages[3].message, "RBT Account Created")
+        self.assertEqual(len(messages), 5)
+        self.assertEqual(messages[4].message, "RBT Account Created")
         self.assertEqual(User.objects.get(id=4).username, "daniel.johnson")
 
-        # test creation of a supervisor from the supervisor path
-        
-        # check that new rbt is created successfully
-        # check that new supervisor is created successfully
-         # check that new user is indeed a supervisor
+        # check that user is not a supervisor
+        rbt = User.objects.get(username="daniel.johnson")
+        self.assertFalse(helper.is_member("Program Supervisor", rbt))
 
+        # test creation of a supervisor from the supervisor path
+        response = c.post("/register/supervisor", {
+            "supervisor_auth": "ASD",
+            "username": "kasandra.french",
+            "firstname": "kasandra",
+            "lastname": "french",
+            "email": "kasandra.french@abcofnc.org",
+            "password": "kasandra", 
+            "confirm_pw": "kasandra",
+        })
+        # check that a new supervisor is created successfully
+        self.assertTrue(User.objects.get(username="kasandra.french"))
+
+        # check that no user_file was created
+        file_path = os.path.join(settings.BASE_DIR, "userlog_files", "5")
+        self.assertFalse(os.path.exists(file_path))
+
+        # check that new user is indeed a supervisor
+        supervisor = User.objects.get(username="kasandra.french")
+        self.assertTrue(helper.is_member("Program Supervisor", supervisor))
+
+        # test the response
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 6)
+        self.assertEqual(messages[5].message, "Supervisor Account Created")
+
+        # check for error when a supervisor credentials fail
+        response = c.post("/register/supervisor", {
+            "supervisor_auth": "fail",
+            "username": "alice.wonder",
+            "firstname": "Alice",
+            "lastname": "Wonder",
+            "email": "Alice.wonder@abcofnc.org",
+            "password": "Alice", 
+            "confirm_pw": "Alice",
+        })
+        # check that user was not created
+        with self.assertRaises(User.DoesNotExist):
+            User.objects.get(username="alice.wonder")
+
+        # test the response
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(messages), 7)
+        self.assertEqual(messages[6].message, "Invalid Supervisor Credentials")
 
 # For each view:
     # - check for the correct response code
