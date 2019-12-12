@@ -75,7 +75,13 @@ class ViewsTestCase(TestCase):
         # redirects to login page
         self.assertEqual(response.status_code, 302)
 
-        # user is logged in
+        # rediects a supervisor user
+        user = User.objects.get(pk=2)
+        c.force_login(user, backend=None)
+        response = c.get("/")
+        self.assertEqual(response.status_code, 302)
+
+        # rbt is logged in
         user = User.objects.get(pk=1)
         c.force_login(user, backend=None)
         response = c.get("/")
@@ -436,6 +442,38 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(messages), 7)
         self.assertEqual(messages[6].message, "Invalid Supervisor Credentials")
+
+    def test_view_hours(self):
+        c = Client()
+
+        # redirect if user is not logged in
+        response = c.get("/view-hours/daily")
+        self.assertEqual(response.status_code, 302)
+
+        # redirect if user is supervisor
+        user = User.objects.get(pk=2)
+        c.force_login(user, backend=None)
+        response = c.get("/view-hours/daily")
+        self.assertEqual(response.status_code, 302)
+
+        # render tables if rbt is logged in
+        user = User.objects.get(pk=1)
+        c.force_login(user, backend=None)
+        response = c.get("/view-hours/daily")
+        self.assertEqual(response.status_code, 200)
+
+        # render error message if incorrect url
+        response = c.get("/view-hours/yearly")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["headings"])
+        self.assertFalse(response.context["data"])
+        self.assertEqual(response.context["message"], "Error: Incorrect URL Path :|")
+        self.assertEqual(response.context["table_type"], "No Such Table")
+        self.assertEqual(response.context["userID"], 1)
+
+
+
+
 
 # For each view:
     # - check for the correct response code
