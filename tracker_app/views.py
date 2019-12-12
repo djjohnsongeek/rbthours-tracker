@@ -313,7 +313,7 @@ def view_hours(request, table_type):
         log = models.Monthly_log
     else:
         context = {
-            'userID': request.user.id,
+            "userID": request.user.id,
             "headings": False,
             "data": False,
             "message": "Error: Incorrect URL Path :|",
