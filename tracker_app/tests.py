@@ -456,20 +456,97 @@ class ViewsTestCase(TestCase):
         response = c.get("/view-hours/daily")
         self.assertEqual(response.status_code, 302)
 
-        # render tables if rbt is logged in
+        # login user an rbt user
         user = User.objects.get(pk=1)
         c.force_login(user, backend=None)
+
+        # send request, check response: DAILY table
         response = c.get("/view-hours/daily")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["headings"],
+            [
+                "DATE",
+                "SESSION HOURS",
+                "OBSERVED HOURS",
+                "SUPERVISOR",
+                "SIGNATURE",
+                "SIGNATURE DATE"
+            ]
+        )
+        self.assertEqual(response.context["userID"], 1)
+        self.assertEqual(response.context["table_type"], "Daily Logs")
+        # 'data' is unpacked as a zipped iterator, therefore
+        # its contents cannot be confirmed via testing because
+        # it is emptied as the template is being rendered
+        # self.assertEqual(response.context["data"], ...)
+        self.assertEqual(response.context["table_type_arg"], "daily")
+        self.assertEqual(response.context["message"], "Data Retrieved")
 
-        # render error message if incorrect url
+
+        # send request, check response: MONTHLY table
+        response = c.get("/view-hours/monthly")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["userID"], 1)
+        self.assertEqual(
+            response.context["headings"],
+            [
+                "YEAR",
+                "MONTH",
+                "SESSION HOURS",
+                "OBSERVED HOURS",
+                "SIGNATURE",
+                "SIGNATURE DATE",
+                "5% ?"
+            ]
+        )
+        self.assertEqual(response.context["table_type"], "Monthly Logs")
+        # self.assertEqual(response.context["data"], ...) zipped data
+        self.assertEqual(response.context["table_type_arg"], "monthly")
+        self.assertEqual(response.context["message"], "Data Retrieved")
+        
+
+        # send request, check response: url is incorrect
         response = c.get("/view-hours/yearly")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["userID"], 1)
         self.assertFalse(response.context["headings"])
         self.assertFalse(response.context["data"])
         self.assertEqual(response.context["message"], "Error: Incorrect URL Path :|")
         self.assertEqual(response.context["table_type"], "No Such Table")
-        self.assertEqual(response.context["userID"], 1)
+        
+
+        # create user with no data logged
+        empty_user = User.objects.create(
+            id=4, 
+            password="hashedpassword4", 
+            is_superuser=False,
+            first_name="First4", 
+            last_name="Last4", 
+            username="firstlast4"
+        )
+
+        # login the 'no data' user
+        c.force_login(empty_user, backend=None)
+
+        # send request, check response: User with no DAILY logs
+        response = c.get("/view-hours/daily")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["userID"], 4)
+        self.assertEqual(response.context["message"], "No Data Found :(")
+        self.assertFalse(response.context["headings"])
+        self.assertFalse(response.context["data"])
+        self.assertEqual(response.context["table_type"], "Daily Logs")
+
+        # send request, check response: User with no MONTHLY logs
+        response = c.get("/view-hours/monthly")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["userID"], 4)
+        self.assertEqual(response.context["message"], "No Data Found :(")
+        self.assertFalse(response.context["headings"])
+        self.assertFalse(response.context["data"])
+        self.assertEqual(response.context["table_type"], "Monthly Logs")
+
 
 
 
