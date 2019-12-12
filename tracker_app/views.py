@@ -371,7 +371,7 @@ def view_hours(request, table_type):
         'userID': request.user.id,
         "headings": headings,
         "data": zipped_data,
-        "message": "No Data Found :(",
+        "message": "Data Retrieved",
         "table_type_arg": table_type,
         "table_type": table_type.capitalize() + " Logs"
 
