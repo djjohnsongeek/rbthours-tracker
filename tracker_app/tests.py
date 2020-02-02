@@ -548,10 +548,6 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context["table_type"], "Monthly Logs")
 
 
-
-
-
-
 # For each view:
     # - check for the correct response code
     # - check for correct content within the reponse context
@@ -562,6 +558,7 @@ class ViewsTestCase(TestCase):
 
 # ---------------------- Test Custom Helper Functions ----------------------- #
 # TODO Test json_httpResponse()
+
 # Test method_not_allowed()
 class MethodNotAllowed(TestCase):
     def test_method_not_allowed(self):
